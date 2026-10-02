@@ -1,0 +1,16 @@
+@utility btn-primary {
+  @apply py-3.25 px-5.5;
+  @apply rounded-full;
+  @apply bg-helper-red;
+  @apply text-button;
+  @apply cursor-pointer;
+  @apply transform duration-300 transition-all ease-out;
+}
+@utility btn-secondary {
+  @apply py-3.25 px-5.5;
+  @apply rounded-full;
+  @apply bg-primary;
+  @apply text-button text-page;
+  @apply cursor-pointer;
+  @apply transform duration-300 transition-all ease-out;
+}

@@ -56,18 +56,18 @@
 @utility text-body-l {
   @apply text-[16px];
   @apply font-normal;
-  @apply leading-[130%];
+  @apply leading-[1.3];
   @apply tracking-normal;
 }
 @utility text-body-m {
   @apply text-[14px];
   @apply font-normal;
-  @apply leading-[130%];
+  @apply leading-[1.3];
   @apply tracking-normal;
 }
 @utility text-body-s {
   @apply text-[12px];
   @apply font-normal;
-  @apply leading-[130%];
+  @apply leading-[1.3];
   @apply tracking-normal;
 }

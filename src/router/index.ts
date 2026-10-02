@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/HomeView.vue'
+import Home from '@/pages/Home.vue'
+import Sessions from '@/pages/Sessions.vue'
 
 const router = createRouter({
   // BASE_URL is '/' in dev and '/kino/' on GitHub Pages (see vite.config.ts)
@@ -8,12 +9,17 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: Home,
+    },
+    {
+      path: '/sessions',
+      name: 'sessions',
+      component: Sessions,
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
-      component: () => import('@/views/NotFoundView.vue'),
+      component: () => import('@/pages/NotFoundView.vue'),
     },
   ],
 })

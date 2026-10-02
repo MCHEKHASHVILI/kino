@@ -1,0 +1,9 @@
+@utility search {
+    @apply w-95;
+    @apply px-3 py-2;
+    @apply text-tint-white;
+    @apply flex gap-1;
+    @apply rounded-full;
+    @apply backdrop-blur-[14px];
+    @apply border border-tint-white;
+} 
