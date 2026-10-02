@@ -1,0 +1,3 @@
+# Keep LF everywhere (matches Prettier's endOfLine) regardless of core.autocrlf
+* text=auto eol=lf
+*.ico binary

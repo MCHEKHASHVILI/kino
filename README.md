@@ -52,3 +52,10 @@ npm run dev
 ```sh
 npm run build
 ```
+
+### Format with Prettier
+
+```sh
+npm run format        # fix
+npm run format:check  # verify only
+```
