@@ -1,0 +1,20 @@
+@layer base {
+  *,
+  ::before,
+  ::after {
+    @apply box-border;
+  }
+  html,
+  body {
+    /* Apply Tailwind utilities for Firefox and IE/Edge */
+    @apply scrollbar-none [-ms-overflow-style:none];
+
+    /* Standard CSS for Chrome, Safari, and newer Edge */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  body {
+    @apply bg-page;
+  }
+}

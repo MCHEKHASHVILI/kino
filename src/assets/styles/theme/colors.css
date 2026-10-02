@@ -1,0 +1,21 @@
+@theme {
+  /** Background Colors */
+  --color-page: #070C1C;
+  --color-card: #1E2031;
+  --color-raised: #2A2C3D;
+
+  /** Text Colors */
+  --color-primary: #FFFFFF;
+  --color-secondary: #A9A9A9;
+  --color-disabled: #505261;
+
+  /** Helper Colors */
+  --color-helper-red: #EC3013;
+  --color-helper-green: #4ADE80;
+  --color-helper-orange: #E27E04;
+
+  /** Tint Colors */
+  --color-tint-white: #FFFFFF1A;
+  --color-tint-red: #EC30131A;
+  --color-tint-green: #4ADE801A;
+}

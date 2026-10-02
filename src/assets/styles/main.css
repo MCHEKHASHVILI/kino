@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+
+@import './theme/variables.css';
+@import './theme/colors.css';
+
+@layer base {
+  @import './base/reset.css';
+}
+
+/* Declared Utilities */
+@import './base/typography.css';

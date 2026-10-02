@@ -1,0 +1,73 @@
+/** Display **/
+@utility text-display {
+  @apply text-[40px];
+  @apply font-extrabold;
+  @apply leading-none;
+  @apply tracking-normal;
+}
+/** Headings */
+@utility text-h1 {
+  @apply text-[24px];
+  @apply font-extrabold;
+  @apply leading-none;
+  @apply tracking-normal;
+}
+@utility text-h2 {
+  @apply text-[20px];
+  @apply font-extrabold;
+  @apply leading-none;
+  @apply tracking-normal;
+}
+@utility text-h3 {
+  @apply text-[18px];
+  @apply font-extrabold;
+  @apply leading-none;
+  @apply tracking-normal;
+}
+/** Buttons */
+@utility text-button {
+  @apply text-[14px];
+  @apply font-extrabold;
+  @apply leading-none;
+  @apply tracking-normal;
+}
+/** Labels */
+@utility text-label-m {
+  @apply text-[14px];
+  @apply font-semibold;
+  @apply leading-none;
+  @apply tracking-normal;
+}
+@utility text-label-s {
+  @apply text-[12px];
+  @apply font-semibold;
+  @apply leading-none;
+  @apply tracking-normal;
+}
+/** Overline */
+@utility text-overline {
+  @apply text-[12px];
+  @apply font-semibold;
+  @apply leading-none;
+  @apply tracking-[6%];
+  @apply uppercase;
+}
+/** Body */
+@utility text-body-l {
+  @apply text-[16px];
+  @apply font-normal;
+  @apply leading-[130%];
+  @apply tracking-normal;
+}
+@utility text-body-m {
+  @apply text-[14px];
+  @apply font-normal;
+  @apply leading-[130%];
+  @apply tracking-normal;
+}
+@utility text-body-s {
+  @apply text-[12px];
+  @apply font-normal;
+  @apply leading-[130%];
+  @apply tracking-normal;
+}
