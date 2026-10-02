@@ -14,20 +14,7 @@ export default defineConfig(({ command }) => ({
     vue(),
     vueDevTools(),
     tailwindcss(),
-    svgLoader({
-      // `import x from './a.svg'` stays a URL (matches vite/client types);
-      // use `./a.svg?component` to get a Vue component.
-      defaultImport: 'url',
-      svgoConfig: {
-        plugins: [
-          {
-            name: 'preset-default',
-            // keep viewBox so icons scale with width/height/CSS
-            params: { overrides: { removeViewBox: false } },
-          },
-        ],
-      },
-    }),
+    svgLoader(),
   ],
   resolve: {
     alias: {

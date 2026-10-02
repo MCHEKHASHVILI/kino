@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ApplicationLogo from '@/components/shared/ApplicationLogo.vue';
 import AppLink from '@/components/shared/AppLink.vue';
-import SearchInput from '@/components/form/SearchInput.vue';
+import SearchBar from '@/components/ui/SearchBar';
 </script>
 <template>
     <header
@@ -13,9 +13,11 @@ import SearchInput from '@/components/form/SearchInput.vue';
             </nav>
         </div>
         <div class="flex items-center justify-start gap-8">
-            <SearchInput />
-            <AppLink :to="{ name: 'home' }" class="btn-primary">sign up</AppLink>
-            <AppLink :to="{ name: 'home' }" class="btn-secondary">log in</AppLink>
+            <SearchBar />
+            <div class="flex gap-3">
+                <AppLink :to="{ name: 'home' }" class="btn-primary first-letter:uppercase">sign up</AppLink>
+                <AppLink :to="{ name: 'home' }" class="btn-secondary first-letter:uppercase">log in</AppLink>
+            </div>
         </div>
     </header>
 </template>

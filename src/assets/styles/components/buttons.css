@@ -4,7 +4,14 @@
   @apply bg-helper-red;
   @apply text-button;
   @apply cursor-pointer;
-  @apply transform duration-300 transition-all ease-out;
+  @apply transform transition-all duration-300 ease-out;
+   @variant hover {
+    /** design not implemented yet */
+  }
+   @variant disabled {
+    @apply bg-disabled;
+    @apply text-secondary;
+  }
 }
 @utility btn-secondary {
   @apply py-3.25 px-5.5;
@@ -12,5 +19,53 @@
   @apply bg-primary;
   @apply text-button text-page;
   @apply cursor-pointer;
-  @apply transform duration-300 transition-all ease-out;
+  @apply transform transition-all duration-300 ease-out;
+  @variant hover {
+    /** design not implemented yet */
+  }
+}
+
+@utility btn-transparent {
+  @apply py-3.25 px-5.5;
+  @apply rounded-full;
+  @apply bg-tint-white;
+  @apply text-button text-primary;
+  @apply cursor-pointer;
+  @apply transform transition-all duration-300 ease-out;
+
+  @variant hover {
+    @apply bg-secondary;
+    @apply backdrop-blur-[44px];
+  }
+}
+
+@utility btn-notify {
+    @apply py-1.5 px-3;
+    @apply rounded-full;
+    @apply border border-secondary;
+    @apply text-label-s text-primary;
+    @apply cursor-pointer;
+    @apply transform transition-all duration-300 ease-out;
+    
+    @variant hover {
+        @apply bg-tint-white;
+    }
+    @variant checked {
+        @apply border-0;
+    }
+}
+
+@utility btn-ghost {
+    @apply p-2.5;
+    @apply border-0 border-b-raised ;
+    @apply text-body-s text-primary;
+    @apply cursor-pointer;
+    @apply transform transition-all duration-300 ease-out;
+    
+    @variant hover {
+        @apply bg-card;
+    }
+    @variant checked {
+        @apply bg-raised;
+    }
 }

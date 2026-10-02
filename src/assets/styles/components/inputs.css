@@ -1,9 +1,52 @@
 @utility search {
-    @apply w-95;
+    @apply flex items-center;
+    @apply gap-1;
+    @apply w-95 h-10.25;
     @apply px-3 py-2;
-    @apply text-tint-white;
-    @apply flex gap-1;
+    @apply bg-tint-white;
+    @apply text-primary;
     @apply rounded-full;
-    @apply backdrop-blur-[14px];
-    @apply border border-tint-white;
-} 
+    @apply border border-transparent;
+    @apply cursor-pointer;
+    @apply transition-all duration-0 ease-out;
+
+    @variant hover {
+        @apply border-tint-white;
+    }
+
+    @variant focus-within {
+        @apply w-120;
+        @apply pl-5.5;
+        @apply outline-none ring-0;
+        @apply border-tint-white;
+        @apply bg-tint-white backdrop-blur-[14px];
+        @apply gap-2;
+    }
+
+    & input {
+        @apply w-full;
+        @apply bg-transparent;
+        @apply border-0;
+        @apply p-0;
+        @apply placeholder:text-primary;
+        @apply cursor-pointer;
+        
+        @variant focus {
+            @apply outline-none ring-0;
+            @apply placeholder:text-disabled;
+        }
+    }
+}
+@utility search-box {
+    @apply absolute top-11.5 left-0;
+    @apply p-2;
+    @apply w-full;
+    @apply rounded-2xl;
+    @apply border border-raised;
+    @apply bg-page;
+    /**@Todo shadow */
+
+    & .content {
+        @apply px-6 pt-8 pb-7;
+    }
+}
