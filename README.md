@@ -34,6 +34,13 @@ cp .env.example .env
 
 Variables live in `.env` (see `.env.example`). Only `VITE_`-prefixed variables are exposed to the app. Declare new ones in `env.d.ts` and read them through `src/config/env.ts`.
 
+Production values live in `.env.production` (committed, so never put secrets there).
+
+### Deployment
+
+Every push to `main` builds and deploys to GitHub Pages via `.github/workflows/deploy.yml`:
+https://mchekhashvili.github.io/kino/
+
 ### Compile and Hot-Reload for Development
 
 ```sh
