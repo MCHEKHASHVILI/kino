@@ -7,6 +7,10 @@
   @import './base/reset.css';
 }
 
+@layer components {
+  @import './components/forms.css';
+}
+
 /* Declared Utilities */
 @import './base/typography.css';
 @import './components/buttons.css';

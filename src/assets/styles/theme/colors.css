@@ -1,21 +1,22 @@
 @theme {
   /** Background Colors */
-  --color-page: #070C1C;
-  --color-card: #1E2031;
-  --color-raised: #2A2C3D;
+  --color-page: #070c1c;
+  --color-card: #1e2031;
+  --color-raised: #2a2c3d;
 
   /** Text Colors */
-  --color-primary: #FFFFFF;
-  --color-secondary: #A9A9A9;
+  --color-primary: #ffffff;
+  --color-secondary: #a9a9a9;
   --color-disabled: #505261;
 
   /** Helper Colors */
-  --color-helper-red: #EC3013;
-  --color-helper-green: #4ADE80;
-  --color-helper-orange: #E27E04;
+  --color-helper-red: #ec3013;
+  --color-helper-green: #4ade80;
+  --color-helper-orange: #e27e04;
 
   /** Tint Colors */
-  --color-tint-white: #FFFFFF1A;
-  --color-tint-red: #EC30131A;
-  --color-tint-green: #4ADE801A;
+  --color-tint-white: #ffffff1a;
+  --color-tint-red: #ec30131a;
+  --color-tint-green: #4ade801a;
+  --color-tint-warning: #e27e041a;
 }

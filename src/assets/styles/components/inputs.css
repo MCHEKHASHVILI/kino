@@ -1,52 +1,165 @@
 @utility search {
-    @apply flex items-center;
-    @apply gap-1;
-    @apply w-95 h-10.25;
-    @apply px-3 py-2;
-    @apply bg-tint-white;
-    @apply text-primary;
-    @apply rounded-full;
-    @apply border border-transparent;
+  @apply flex items-center;
+  @apply gap-1;
+  @apply h-10.25 w-95;
+  @apply px-3 py-2;
+  @apply bg-tint-white;
+  @apply text-primary;
+  @apply rounded-full;
+  @apply border border-transparent;
+  @apply cursor-pointer;
+  @apply transition-all duration-0 ease-out;
+
+  @variant hover {
+    @apply border-tint-white;
+  }
+
+  @variant focus-within {
+    @apply w-120;
+    @apply pl-5.5;
+    @apply ring-0 outline-none;
+    @apply border-tint-white;
+    @apply bg-tint-white backdrop-blur-[14px];
+    @apply gap-2;
+  }
+
+  & input {
+    @apply w-full;
+    @apply bg-transparent;
+    @apply border-0;
+    @apply p-0;
+    @apply placeholder:text-primary;
     @apply cursor-pointer;
-    @apply transition-all duration-0 ease-out;
 
-    @variant hover {
-        @apply border-tint-white;
+    @variant focus {
+      @apply ring-0 outline-none;
+      @apply placeholder:text-disabled;
     }
-
-    @variant focus-within {
-        @apply w-120;
-        @apply pl-5.5;
-        @apply outline-none ring-0;
-        @apply border-tint-white;
-        @apply bg-tint-white backdrop-blur-[14px];
-        @apply gap-2;
-    }
-
-    & input {
-        @apply w-full;
-        @apply bg-transparent;
-        @apply border-0;
-        @apply p-0;
-        @apply placeholder:text-primary;
-        @apply cursor-pointer;
-        
-        @variant focus {
-            @apply outline-none ring-0;
-            @apply placeholder:text-disabled;
-        }
-    }
+  }
 }
 @utility search-box {
-    @apply absolute top-11.5 left-0;
-    @apply p-2;
-    @apply w-full;
-    @apply rounded-2xl;
-    @apply border border-raised;
-    @apply bg-page;
-    /**@Todo shadow */
+  @apply absolute top-11.5 left-0;
+  @apply p-2;
+  @apply w-full;
+  @apply rounded-2xl;
+  @apply border border-raised;
+  @apply bg-page;
+  /**@Todo shadow */
 
-    & .content {
-        @apply px-6 pt-8 pb-7;
+  & .content {
+    @apply px-6 pt-8 pb-7;
+  }
+}
+
+@utility input-group {
+  @apply flex w-full flex-col gap-2;
+
+  & label {
+    @apply text-label-s text-nowrap text-primary capitalize;
+  }
+
+  & .text-input {
+    @apply relative;
+    @apply h-10;
+    @apply flex items-center;
+    @apply grow;
+    @apply rounded-lg border-0;
+    @apply text-label-s text-secondary;
+    @apply bg-card;
+    @apply transform transition-all duration-300 ease-out;
+
+    & input {
+      /* 1. Disable the font feature causing the shift */
+      font-variant-ligatures: no-contextual;
+      -webkit-font-feature-settings: 'calt' 0;
+      font-feature-settings: 'calt' 0;
+
+      @apply w-fit;
+      @apply min-w-full;
+      @apply h-10;
+      @apply px-4;
+      @apply rounded-xl border border-transparent;
+      @apply text-label-s placeholder:text-secondary;
+
+      @variant hover {
+        @apply bg-raised;
+        @apply border border-disabled;
+      }
+      @variant focus {
+        @apply bg-card;
+        @apply border border-disabled;
+        @apply ring-0 outline-none;
+      }
+      @variant autofill {
+        @apply shadow-[inset_0_0_0_1000px_var(--color-card)];
+        @apply [-webkit-text-fill-color:var(--color-secondary)];
+        @apply caret-secondary;
+        @apply transition-[background-color] delay-[5000s];
+
+        @variant hover {
+          @apply shadow-[inset_0_0_0_1000px_var(--color-raised)];
+        }
+        @variant focus {
+          @apply shadow-[inset_0_0_0_1000px_var(--color-card)];
+        }
+      }
+      /* @variant disabled {
+        @apply cursor-not-allowed;
+      } */
     }
+
+    /* & .prefix {
+      @apply absolute inset-y-0 left-0 pl-3.25;
+      @apply py-3;
+      @apply leading-5.5;
+      @apply w-fit;
+      @apply flex items-center;
+      @apply cursor-default;
+      @apply text-grayscale-700;
+    }
+    & .suffix {
+      @apply absolute inset-y-0 right-0 pr-3.75;
+      @apply py-3;
+      @apply text-[22px] leading-5.5;
+      @apply w-fit;
+      @apply flex items-center;
+      @apply cursor-default;
+      @apply text-grayscale-300;
+
+      @variant peer-hover {
+        @apply text-grayscale-300;
+      }
+
+      @variant peer-focus {
+        @apply text-grayscale-400;
+      }
+      @variant peer-disabled {
+        @apply text-grayscale-300;
+      }
+    } */
+    /* Selectpicker */
+    /* & button {
+      @apply flex flex-row items-center justify-between;
+      @apply grow;
+      @apply w-fit;
+      @apply min-w-full;
+      @apply border-grayscale-200 rounded-lg border-[1.5px] border-solid;
+      @apply text-body-xs text-grayscale-400;
+      @apply leading-5.5;
+      @apply py-3 pr-3.75 pl-3.25;
+      @apply cursor-pointer;
+      @variant hover {
+        @apply border-grayscale-300;
+        @apply text-grayscale-200;
+      }
+      @variant focus {
+        @apply border-grayscale-400;
+        @apply ring-0 outline-none;
+      }
+      
+      & .suffix {
+        @apply text-[22px] leading-5.5;
+      }
+    } */
+  }
 }
