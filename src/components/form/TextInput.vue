@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import IconLoader from '@/components/shared/IconLoader.vue'
 const model = defineModel<string | number | null>({ default: null })
 
@@ -18,23 +18,17 @@ const props = withDefaults(
 )
 
 const currentType = ref(props.type)
-const currentIcon = ref<string | undefined>(props.icon)
-
-const toggleVisibility = () => {
-  if (props.icon && !props.icon.includes('eye')) return
-  currentType.value = currentType.value === 'password' ? 'text' : 'password'
-  currentIcon.value = currentIcon.value === 'eye_closed' ? 'eye_open' : 'eye_closed'
-}
+const currentIcon = computed<string | undefined>(() => props.icon)
 </script>
 
 <template>
   <div class="input-group relative w-full">
-    <label v-if="label" v-text="label" />
+    <label v-if="label" v-text="label" :class="{ 'text-helper-red!': errors && errors.length }" />
     <div class="text-input">
       <span
         v-if="prefix"
         class="prefix"
-        :class="{ 'text-helper-error': errors && errors.length }"
+        :class="{ 'text-helper-red': errors && errors.length }"
         v-text="prefix"
       />
       <input
@@ -44,26 +38,23 @@ const toggleVisibility = () => {
         :class="[
           'peer',
           { 'pr-12 pl-13!': prefix },
-          { 'text-helper-error! border-helper-error!': errors && errors.length },
+          { 'border-helper-red! text-helper-red!': errors && errors.length },
         ]"
         v-bind="$attrs"
       />
       <span
-        v-if="icon"
+        v-if="icon || (errors && errors.length)"
         class="suffix"
         :class="[
-          { 'text-helper-error!': errors && errors.length },
-          {
-            'cursor-pointer!': type === 'password' || icon.includes('eye'),
-          },
+          { 'text-helper-red!': errors && errors.length },
+          { 'text-helper-green': !errors || !errors.length },
         ]"
-        @click="toggleVisibility"
       >
-        <IconLoader :name="currentIcon || ''" />
+        <IconLoader :name="currentIcon || ''" class="text-[16px]" />
       </span>
     </div>
     <div v-if="errors && errors.length" class="flex flex-col">
-      <p v-for="error in errors" class="text-helper-error text-xs font-normal" v-text="error" />
+      <p v-for="error in errors" class="text-label-s text-helper-red" v-text="error" />
     </div>
   </div>
 </template>

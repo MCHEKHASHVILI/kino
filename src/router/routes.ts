@@ -26,7 +26,7 @@ const routes = [
     component: { render: () => null },
     meta: {
       // Define the guest-only modals directly in the route
-      guestOnlyModals: ['LogInModal', 'RegisterModal'],
+      guestOnlyModals: ['LogInModal', 'RegistrationModal'],
     },
   },
   /**

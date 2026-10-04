@@ -35,7 +35,7 @@ const statusColor = {
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: 8px;
   overflow: hidden;
 }
 

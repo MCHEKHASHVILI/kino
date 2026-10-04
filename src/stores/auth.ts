@@ -1,10 +1,14 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { ref, computed } from 'vue'
-import { http } from '@/api/http'
-import type { UserAuthenticationForm, UserProfile } from '@types'
+import type { AuthenticationResponse, UserAuthenticationForm, UserProfile } from '@types'
 import { useModalStore } from './modals'
+import { useApiStore } from './api'
 
 export const useAuthStore = defineStore('auth', () => {
+  const api = useApiStore()
+  const { validationErrorsOf } = api
+  const { inputIconStatus } = storeToRefs(api)
+
   // State
   const email = ref<UserAuthenticationForm['email']>()
   const password = ref<UserAuthenticationForm['password']>()
@@ -28,6 +32,11 @@ export const useAuthStore = defineStore('auth', () => {
     return names[0]
   })
 
+  const userName = computed(() => {
+    if (!user.value || !user.value.username) return ''
+    return user.value.username
+  })
+
   const isProfileComplete = computed(() => {
     if (!user.value) return false
     return user.value.profileComplete
@@ -41,26 +50,30 @@ export const useAuthStore = defineStore('auth', () => {
     if (!user.value || !user.value.fullName) return ''
     return user.value.fullName
   })
+
+  const isLoading = computed(() => api.isLoading('login'))
+  // Wrong credentials, guest 401 is left to the caller by UnauthenticatedHandler
+  const isUnauthorized = computed(() => api.errorOf('login')?.status === 401)
+
   // Actions
   async function login(): Promise<void> {
     const credentials: UserAuthenticationForm = {
       email: email.value,
       password: password.value,
     }
-    const response = await http.post('login', credentials)
-    if (!response.status || response.status !== 200) {
-      // Show Error Messages
+    // On failure ApiError is kept in api store, read it with api.errorOf('login')
+    const response = await api
+      .post<{ data: AuthenticationResponse }>('login', 'login', credentials)
+      .catch(() => null)
+    if (!response) return
 
-      return
-    }
-    const { data } = response.data
-    authenticate(data)
+    authenticate(response.data)
     const modalStore = useModalStore()
     const { closeModal } = modalStore
     closeModal()
   }
 
-  function authenticate(data: { user: UserProfile; token: string }) {
+  function authenticate(data: AuthenticationResponse) {
     user.value = data.user
     token.value = data.token
 
@@ -88,8 +101,13 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     initials,
     firstName,
+    userName,
     isProfileComplete,
     avatar,
     fullName,
+    isLoading,
+    isUnauthorized,
+    validationErrorsOf,
+    inputIconStatus,
   }
 })

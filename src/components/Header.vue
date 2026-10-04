@@ -21,7 +21,7 @@ const { isAuthenticated } = storeToRefs(authStore)
     <div class="flex items-center justify-start gap-8">
       <SearchBar />
       <div v-if="!isAuthenticated" class="flex gap-3">
-        <AppLink :to="{ name: 'action.modal', params: { name: 'RegisterModal' } }">
+        <AppLink :to="{ name: 'action.modal', params: { name: 'RegistrationModal' } }">
           <button class="btn-primary first-letter:uppercase">sign up</button>
         </AppLink>
         <AppLink :to="{ name: 'action.modal', params: { name: 'LogInModal' } }">

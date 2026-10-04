@@ -9,7 +9,7 @@ import IconLoader from '@/components/shared/IconLoader.vue'
 import AppLink from '../shared/AppLink.vue'
 
 const authStore = useAuthStore()
-const { user, firstName, isProfileComplete, avatar, fullName } = storeToRefs(authStore)
+const { user, userName, isProfileComplete, avatar, fullName } = storeToRefs(authStore)
 const { logout } = authStore
 
 const route = useRoute()
@@ -59,11 +59,11 @@ watch(() => route.fullPath, closeInstantly)
       <!-- Avatar -->
       <BaseAvatar
         :status="isProfileComplete ? 'complete' : 'incomplete'"
-        :avatar="isProfileComplete ? avatar : null"
+        :avatar="avatar ? avatar : null"
         alt="User profile avatar"
       />
       <!-- User Name -->
-      <span class="text-label-m text-primary" v-text="firstName" />
+      <span class="text-label-m text-primary" v-text="userName" />
 
       <!-- Rotating Arrow Icon -->
       <IconLoader
@@ -95,7 +95,7 @@ watch(() => route.fullPath, closeInstantly)
           <div class="flex flex-row items-center gap-2.5">
             <BaseAvatar
               :status="isProfileComplete ? 'complete' : 'incomplete'"
-              :avatar="isProfileComplete ? avatar : null"
+              :avatar="avatar ? avatar : null"
               alt="User profile avatar"
             />
             <div class="flex flex-col justify-between gap-0.5">

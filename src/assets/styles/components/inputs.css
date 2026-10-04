@@ -55,14 +55,13 @@
   @apply flex w-full flex-col gap-2;
 
   & label {
-    @apply text-label-s text-nowrap text-primary capitalize;
+    @apply text-label-s text-nowrap text-primary first-letter:uppercase;
   }
 
   & .text-input {
     @apply relative;
-    @apply h-10;
     @apply flex items-center;
-    @apply grow;
+    /* @apply grow; */
     @apply rounded-lg border-0;
     @apply text-label-s text-secondary;
     @apply bg-card;
@@ -116,27 +115,28 @@
       @apply flex items-center;
       @apply cursor-default;
       @apply text-grayscale-700;
-    }
+    }*/
     & .suffix {
       @apply absolute inset-y-0 right-0 pr-3.75;
       @apply py-3;
-      @apply text-[22px] leading-5.5;
+      @apply text-[16px];
+      /* @apply leading-5.5; */
       @apply w-fit;
       @apply flex items-center;
       @apply cursor-default;
-      @apply text-grayscale-300;
+      /* @apply text-grayscale-300; */
 
       @variant peer-hover {
-        @apply text-grayscale-300;
+        /* @apply text-grayscale-300; */
       }
 
       @variant peer-focus {
-        @apply text-grayscale-400;
+        /* @apply text-grayscale-400; */
       }
       @variant peer-disabled {
-        @apply text-grayscale-300;
+        /* @apply text-grayscale-300; */
       }
-    } */
+    }
     /* Selectpicker */
     /* & button {
       @apply flex flex-row items-center justify-between;
