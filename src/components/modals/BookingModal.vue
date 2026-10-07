@@ -6,14 +6,12 @@ import SeatMapView from '@/components/ui/Booking/SeatMap.vue'
 import SeatLegend from '@/components/ui/Booking/SeatLegend.vue'
 import SelectedSeat from '@/components/ui/Booking/SelectedSeat.vue'
 import { useModalStore } from '@/stores/modals'
-import { useMovieStore } from '@/stores/movie'
 import { useBookingStore } from '@/stores/booking'
 import { useBookingSeatsStore } from '@/stores/booking/seats'
 import { useBookingSessionStore } from '@/stores/booking/session'
 import { useBookingTicketTypesStore } from '@/stores/booking/ticketTypes'
 
 const { activeModal } = storeToRefs(useModalStore())
-const { movie } = storeToRefs(useMovieStore())
 const bookingStore = useBookingStore()
 const { fetchSeats, proceedToCheckout, closeBooking } = bookingStore
 const { selectedSeats, maxSeats } = storeToRefs(useBookingSeatsStore())
@@ -31,7 +29,7 @@ onUnmounted(closeBooking)
   <BaseModal
     :isOpen="!!activeModal"
     @close="$emit('close')"
-    :title="movie ? movie.title : ''"
+    :title="session?.movie.title ?? ''"
     :subtitle="subtitle"
   >
     <template #exit>
