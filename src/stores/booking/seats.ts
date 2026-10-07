@@ -2,12 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Seat, SelectedSeat } from '@types'
 import { useFilterOptionsStore } from '../filterOptions'
-import { useBookingTicketTypesStore } from './ticketTypes'
 
-// Seats collected on the map, nothing is sent until the booking store holds them
+// Seats collected on the map, nothing is sent until the booking store holds them.
+// Knows nothing about ticket types, the ticket types store follows this selection
 export const useBookingSeatsStore = defineStore('booking.seats', () => {
   const filterOptionsStore = useFilterOptionsStore()
-  const ticketTypesStore = useBookingTicketTypesStore()
 
   // State
   // In the order they were picked
@@ -33,7 +32,6 @@ export const useBookingSeatsStore = defineStore('booking.seats', () => {
 
   function removeSeat(seatId: Seat['id']) {
     selectedSeats.value = selectedSeats.value.filter((selected) => selected.seatId !== seatId)
-    ticketTypesStore.clearTicketType(seatId)
   }
 
   // Seat map click: picks a free seat or drops an already picked one
@@ -50,9 +48,6 @@ export const useBookingSeatsStore = defineStore('booking.seats', () => {
     const kept = selectedSeats.value.filter((selected) =>
       seats.some((seat) => seat.id === selected.seatId && !isBlocked(seat)),
     )
-    selectedSeats.value
-      .filter((selected) => !kept.includes(selected))
-      .forEach((lost) => ticketTypesStore.clearTicketType(lost.seatId))
     const mine = seats
       .filter((seat) => seat.isMine && !kept.some((selected) => selected.seatId === seat.id))
       .map((seat) => ({ seatId: seat.id, code: seat.code }))
@@ -61,7 +56,6 @@ export const useBookingSeatsStore = defineStore('booking.seats', () => {
 
   function reset() {
     selectedSeats.value = []
-    ticketTypesStore.reset()
   }
 
   // Sold never frees up, held is someone else's live hold unless it is ours

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Seat, SelectedTicket, TicketTypeSlug } from '@types'
 import { useFilterOptionsStore } from '../filterOptions'
 import { useBookingSeatsStore } from './seats'
@@ -11,7 +11,6 @@ const DEFAULT_TICKET_TYPE: TicketTypeSlug = 'adult'
 export const useBookingTicketTypesStore = defineStore('booking.ticketTypes', () => {
   const filterOptionsStore = useFilterOptionsStore()
   const sessionStore = useBookingSessionStore()
-  // Seats store uses this store too, fine as long as neither is read during setup
   const seatsStore = useBookingSeatsStore()
 
   // State
@@ -67,14 +66,24 @@ export const useBookingTicketTypesStore = defineStore('booking.ticketTypes', () 
     seatTicketTypes.value[seatId] = ticketType
   }
 
-  // Dropped seat starts as adult again if it is picked later
-  function clearTicketType(seatId: Seat['id']) {
-    delete seatTicketTypes.value[seatId]
-  }
-
   function reset() {
     seatTicketTypes.value = {}
   }
+
+  /**
+   * Drops types of seats that left the selection (removed, taken by someone else, reset),
+   * so a seat picked again starts as adult. Sync, so a remove and re-pick in one tick still resets it
+   */
+  watch(
+    () => seatsStore.selectedSeats.map((selected) => selected.seatId),
+    (seatIds) => {
+      Object.keys(seatTicketTypes.value)
+        .map(Number)
+        .filter((seatId) => !seatIds.includes(seatId))
+        .forEach((seatId) => delete seatTicketTypes.value[seatId])
+    },
+    { flush: 'sync' },
+  )
 
   return {
     seatTicketTypes,
@@ -84,7 +93,6 @@ export const useBookingTicketTypesStore = defineStore('booking.ticketTypes', () 
     priceRatioOf,
     isTicketTypeAllowed,
     setTicketType,
-    clearTicketType,
     reset,
   }
 })
