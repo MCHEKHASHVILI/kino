@@ -33,6 +33,25 @@
   }
 }
 
+@utility badge-ticket-types {
+  @apply flex items-center justify-center gap-0.5;
+  @apply w-full;
+  @apply py-2;
+  @apply rounded-2xl;
+  @apply bg-raised;
+  @apply text-body-s text-primary;
+  @apply cursor-pointer;
+  @apply transform transition-all duration-300 ease-in-out;
+
+  @variant hover {
+    /* @apply bg-raised; */
+    @apply transform transition-all duration-300 ease-in-out;
+  }
+  @variant has-[:checked] {
+    @apply bg-helper-red;
+  }
+}
+
 @utility badge-progress {
   @apply flex flex-row items-center justify-center;
   @apply px-4 py-2.5;

@@ -7,8 +7,7 @@ import { useBookingSeatsStore } from '@/stores/booking/seats'
 
 const { seatMap } = storeToRefs(useBookingStore())
 const seatsStore = useBookingSeatsStore()
-const { isBlocked, isDisabled } = seatsStore
-const { selectedSeatIds } = storeToRefs(seatsStore)
+const { isBlocked, isDisabled, isSelected, toggleSeat } = seatsStore
 
 const viewport = ref<HTMLElement | null>(null)
 const canvas = ref<HTMLElement | null>(null)
@@ -64,7 +63,7 @@ const { fits, zoomIn, zoomOut, fit } = useSeatMapViewport(viewport, canvas, {
                   :class="{
                     'is-sold': seat.state === 'sold',
                     'is-held': seat.state === 'held',
-                    // Free seat locked only because the 3 seat limit is reached
+                    // Free seat locked only because the seats per order limit is reached
                     'is-disabled': !isBlocked(seat) && isDisabled(seat),
                     'mr-6': seat.aisleAfter,
                   }"
@@ -73,8 +72,8 @@ const { fits, zoomIn, zoomOut, fit } = useSeatMapViewport(viewport, canvas, {
                   <input
                     type="checkbox"
                     class="sr-only"
-                    :value="seat.id"
-                    v-model="selectedSeatIds"
+                    :checked="isSelected(seat.id)"
+                    @change="toggleSeat(seat)"
                     :disabled="isDisabled(seat)"
                     :aria-label="'Seat ' + seat.code"
                   />

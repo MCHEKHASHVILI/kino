@@ -1,21 +1,19 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
-import type { Seat, SeatHold, SeatMap, Session } from '@types'
+import { ref, computed } from 'vue'
+import type { SeatHold, SeatMap, Session } from '@types'
 import { isApiError } from '@/api/ApiError'
 import { useApiStore } from '../api'
-import { useFilterOptionsStore } from '../filterOptions'
 import { useBookingSeatsStore } from './seats'
-
-export { MAX_SEATS } from './seats'
+import { useBookingSessionStore } from './session'
+import { useBookingTicketTypesStore } from './ticketTypes'
 
 export const useBookingStore = defineStore('booking', () => {
   const api = useApiStore()
-  const filterOptionsStore = useFilterOptionsStore()
+  const sessionStore = useBookingSessionStore()
   const seatsStore = useBookingSeatsStore()
+  const ticketTypesStore = useBookingTicketTypesStore()
 
   // State
-  // Session picked on the movie page, read by BookingModal
-  const session = ref<Session | null>(null)
   const seatMap = ref<SeatMap | null>(null)
   const progress = ref<'seats' | 'checkout'>('seats')
   // Hold response for the current selection: seats with prices, subtotal, expiry and holdId
@@ -24,66 +22,51 @@ export const useBookingStore = defineStore('booking', () => {
   const contestedSeats = ref<string[]>([])
 
   // Getters
-  // Venue · Hall · Weekday Day Month · Time · Format · Language
-  const subtitle = computed(() => {
-    if (!session.value) return ''
-    return [
-      session.value.venue.name,
-      'Hall ' + session.value.hall.name,
-      new Date(session.value.date).toLocaleDateString('en-GB', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-      }),
-      session.value.time,
-      session.value.format.name,
-      session.value.language.name,
-    ].join(' · ')
-  })
+  const isSeatMapLoading = computed(() => api.isLoading(`seats.${sessionStore.session?.id}`))
 
-  const isSeatMapLoading = computed(() => api.isLoading(`seats.${session.value?.id}`))
+  const isHolding = computed(() => api.isLoading(`hold.${sessionStore.session?.id}`))
 
-  // Loaded when the app starts, so they are ready before the modal opens
-  const ticketTypes = computed(() => filterOptionsStore.ticketTypesOptions)
-  const isHolding = computed(() => api.isLoading(`hold.${session.value?.id}`))
-
-  // Full seat objects for the selection (code for summaries), in the order they were picked
-  const selectedSeats = computed(() => {
-    const seats = new Map<Seat['id'], Seat>()
-    seatMap.value?.sections.forEach((section) =>
-      section.rows.forEach((row) => row.seats.forEach((seat) => seats.set(seat.id, seat))),
-    )
-    return seatsStore.selectedSeatIds.flatMap((id) => seats.get(id) ?? [])
-  })
+  // Estimate before holding, the hold returns the real total
+  const subtotal = computed(
+    () =>
+      Math.round(
+        ticketTypesStore.selectedTickets.reduce((sum, ticket) => sum + ticket.price, 0) * 100,
+      ) / 100,
+  )
 
   // Actions
   // Store outlives the modal, so a new booking starts from step 1 with nothing selected
   function selectSession(value: Session) {
-    session.value = value
+    sessionStore.setSession(value)
     seatsStore.reset()
     heldSeats.value = null
     contestedSeats.value = []
     progress.value = 'seats'
   }
 
-  // Bumped per hold request, so only the latest selection's response is applied
+  // Bumped per hold request, so only the latest response is applied
   let holdRequest = 0
 
   /**
-   * Holds the current selection, a new hold replaces the previous one on the API side.
+   * Holds the collected seats once the user is done picking, called explicitly rather than per click.
+   * A new hold replaces the previous one on the API side.
    * Empty selection releases the hold instead, POST needs at least one seat
    */
   async function holdSeats() {
-    const sessionId = session.value?.id
+    const sessionId = sessionStore.session?.id
     if (!sessionId) return
     const request = ++holdRequest
-    if (!seatsStore.selectedSeatIds.length) return releaseHold()
+    if (!seatsStore.selectedSeats.length) return releaseHold()
 
+    const seats = ticketTypesStore.selectedTickets.map(({ seatId, ticketType }) => ({
+      seatId,
+      ticketType,
+    }))
     try {
       const response = await api.post<{ data: SeatHold }>(
         `hold.${sessionId}`,
         `sessions/${sessionId}/holds`,
-        { seats: seatsStore.seatsWithTicketTypes },
+        { seats },
       )
       if (request !== holdRequest) return
       heldSeats.value = response.data
@@ -97,20 +80,12 @@ export const useBookingStore = defineStore('booking', () => {
 
   /**
    * Someone took seats between drawing the map and holding them.
-   * Drops lost seats from the selection, keeps the rest and holds them again on a fresh map
+   * A fresh map drops the lost seats from the selection, the user reviews the rest and holds again
    */
   async function reconcileContested(error: { response?: { data?: unknown } }) {
     const data = error.response?.data as { contested?: string[] } | undefined
-    const contested = data?.contested ?? []
-    const lostIds = selectedSeats.value
-      .filter((seat) => contested.includes(seat.code))
-      .map((seat) => seat.id)
-    const remainingIds = seatsStore.selectedSeatIds.filter((id) => !lostIds.includes(id))
-
     await fetchSeats()
-    contestedSeats.value = contested
-    // Selection watcher holds the remaining seats again
-    seatsStore.select(remainingIds)
+    contestedSeats.value = data?.contested ?? []
   }
 
   // Seats go straight back onto the map instead of waiting for the hold to lapse
@@ -122,39 +97,29 @@ export const useBookingStore = defineStore('booking', () => {
   }
 
   async function fetchSeats() {
-    const sessionId = session.value?.id
+    const sessionId = sessionStore.session?.id
     seatMap.value = null
     if (!sessionId) return
     const response = await api
       .get<{ data: SeatMap }>(`seats.${sessionId}`, `sessions/${sessionId}/seats`)
       .catch(() => null)
     // Session was switched again while this request was in flight
-    if (sessionId !== session.value?.id) return
+    if (sessionId !== sessionStore.session?.id) return
     seatMap.value = response?.data ?? null
-    // Seats from our own live hold come back as isMine, restore them as selected
-    seatsStore.select(
-      seatMap.value?.sections.flatMap((section) =>
-        section.rows.flatMap((row) =>
-          row.seats.filter((seat) => seat.isMine).map((seat) => seat.id),
-        ),
-      ) ?? [],
+    if (!seatMap.value) return
+    seatsStore.syncWithMap(
+      seatMap.value.sections.flatMap((section) => section.rows.flatMap((row) => row.seats)),
     )
   }
 
-  // Every selection or ticket type change (seat clicks, restored isMine seats, 409 reconcile) re-holds it
-  watch(() => seatsStore.seatsWithTicketTypes, holdSeats, { deep: true })
-
   return {
-    session,
     seatMap,
     progress,
-    subtitle,
     isSeatMapLoading,
-    selectedSeats,
     heldSeats,
-    ticketTypes,
     contestedSeats,
     isHolding,
+    subtotal,
     selectSession,
     holdSeats,
     releaseHold,

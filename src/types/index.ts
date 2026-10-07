@@ -8,6 +8,8 @@ export * from './Language';
 export * from './Movie';
 export * from './SeatHold';
 export * from './SeatMap';
+export * from './SelectedSeat';
+export * from './SelectedTicket';
 export * from './Session';
 export * from './TicketType';
 export * from './UserAuthenticationForm';
