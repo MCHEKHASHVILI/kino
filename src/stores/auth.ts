@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import type { AuthenticationResponse, UserAuthenticationForm, UserProfile } from '@types'
 import { useModalStore } from './modals'
 import { useApiStore } from './api'
+import { useBookingStore } from './booking'
 
 export const useAuthStore = defineStore('auth', () => {
   const api = useApiStore()
@@ -88,7 +89,19 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('user', JSON.stringify(data))
   }
 
-  function logout() {
+  /**
+   * Signing out: held seats go back onto the map and the token is revoked (POST /logout)
+   * while the token still works, then the stored session is cleared regardless of the responses.
+   * Global handlers are skipped, a 401 here must not start another logout
+   */
+  async function logout(): Promise<void> {
+    await useBookingStore().releaseHold()
+    await api.post('logout', 'logout', undefined, { skipErrorHandler: true }).catch(() => null)
+    clearSession()
+  }
+
+  // Token already rejected (401), so nothing can be revoked or released with it, only local state goes
+  function clearSession() {
     user.value = null
     token.value = null
     localStorage.removeItem('user')
@@ -102,6 +115,7 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     login,
     logout,
+    clearSession,
     authenticate,
     setUser,
     isAuthorized,

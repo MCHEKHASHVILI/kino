@@ -1,11 +1,16 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import type { Movie, MovieSessionItem, SeatHold, SeatMap } from '@types'
+import { ref, computed, watch } from 'vue'
+import type { Movie, MovieSessionItem, SeatHold, SeatMap, Session } from '@types'
 import { isApiError } from '@/api/ApiError'
 import { useApiStore } from '../api'
+import { useAuthStore } from '../auth'
+import { useModalStore } from '../modals'
 import { useBookingSeatsStore } from './seats'
 import { useBookingSessionStore } from './session'
 import { useBookingTicketTypesStore } from './ticketTypes'
+
+// Live hold id survives a page reload here, restoreHold reads it back on app start
+const HOLD_STORAGE_KEY = 'holdId'
 
 export const useBookingStore = defineStore('booking', () => {
   const api = useApiStore()
@@ -38,9 +43,10 @@ export const useBookingStore = defineStore('booking', () => {
   // Store outlives the modal, so a new booking starts from step 1 with nothing selected.
   // Movie page sessions come without their movie, it is attached here so the age rating is known
   function selectSession(value: MovieSessionItem, movie: Movie) {
+    // Previous booking's seats go back onto the map, not awaited so the modal opens right away
+    if (heldSeats.value) releaseHold()
     sessionStore.setSession({ ...value, movie })
     seatsStore.reset()
-    heldSeats.value = null
     contestedSeats.value = []
     progress.value = 'seats'
   }
@@ -73,8 +79,8 @@ export const useBookingStore = defineStore('booking', () => {
       heldSeats.value = response.data
     } catch (error) {
       if (request !== holdRequest) return
-      // Nothing is held after a failure, previous hold was replaced or never existed
-      heldSeats.value = null
+      // Nothing is held after a failure, previous hold is released so the stored id goes with it
+      await releaseHold()
       if (isApiError(error) && error.status === 409) await reconcileContested(error.original)
     }
   }
@@ -96,12 +102,71 @@ export const useBookingStore = defineStore('booking', () => {
     if (heldSeats.value) progress.value = 'checkout'
   }
 
-  // Seats go straight back onto the map instead of waiting for the hold to lapse
-  async function releaseHold() {
-    const holdId = heldSeats.value?.holdId
+  /**
+   * Seats go straight back onto the map instead of waiting for the hold to lapse.
+   * Backend is told first (DELETE holds/{hold}), only then the stored id is forgotten.
+   * Cleanup runs in the background, so global handlers are skipped (a 404 must not redirect)
+   */
+  async function releaseHold(
+    holdId = heldSeats.value?.holdId ?? localStorage.getItem(HOLD_STORAGE_KEY),
+  ) {
     heldSeats.value = null
     if (!holdId) return
-    await api.destroy(`release.${holdId}`, `holds/${holdId}`).catch(() => null)
+    await api
+      .destroy(`release.${holdId}`, `holds/${holdId}`, { skipErrorHandler: true })
+      .catch(() => null)
+    // A newer hold may have been stored while the request was in flight, keep that one
+    if (localStorage.getItem(HOLD_STORAGE_KEY) === holdId) {
+      localStorage.removeItem(HOLD_STORAGE_KEY)
+    }
+  }
+
+  /**
+   * Brings back a hold after a page reload: the hold, its session (with movie) and the selection,
+   * then reopens the booking modal on checkout.
+   * Expired hold (isLive false) is released on the API before its id is forgotten.
+   * Missing (404) or not ours (401, 403) can't be released, so the id is only forgotten,
+   * global handlers are skipped so a background restore never redirects or logs the user out
+   */
+  async function restoreHold() {
+    const holdId = localStorage.getItem(HOLD_STORAGE_KEY)
+    if (!holdId) return
+    // DELETE needs the token too, a logged out user's hold just lapses
+    if (!useAuthStore().isAuthenticated) return localStorage.removeItem(HOLD_STORAGE_KEY)
+
+    const skipErrorHandler = [401, 403, 404] as const
+    const forgetOnRejection = (error: unknown) => {
+      if (isApiError(error) && skipErrorHandler.some((status) => status === error.status)) {
+        localStorage.removeItem(HOLD_STORAGE_KEY)
+      }
+      return null
+    }
+
+    const hold = await api
+      .get<{ data: SeatHold }>(`restoreHold.${holdId}`, `holds/${holdId}`, {
+        skipErrorHandler: [...skipErrorHandler],
+      })
+      .then((response) => response.data)
+      .catch(forgetOnRejection)
+    if (!hold) return
+    if (!hold.isLive) return releaseHold(hold.holdId)
+
+    const session = await api
+      .get<{ data: Session }>(`session.${hold.sessionId}`, `sessions/${hold.sessionId}`, {
+        skipErrorHandler: [...skipErrorHandler],
+      })
+      .then((response) => response.data)
+      .catch(forgetOnRejection)
+    if (!session) return
+
+    sessionStore.setSession(session)
+    contestedSeats.value = []
+    // Seats first, the ticket types store drops types of seats that are not selected
+    seatsStore.setSeats(hold.seats.map(({ seatId, code }) => ({ seatId, code })))
+    hold.seats.forEach((seat) => ticketTypesStore.setTicketType(seat.seatId, seat.ticketType.slug))
+    heldSeats.value = hold
+    progress.value = 'checkout'
+    useModalStore().openModal('BookingModal')
   }
 
   async function fetchSeats() {
@@ -120,6 +185,12 @@ export const useBookingStore = defineStore('booking', () => {
     )
   }
 
+  // Stores the live hold id so restoreHold can bring it back after a reload,
+  // removing it is left to releaseHold, which tells the backend first
+  watch(heldSeats, (hold) => {
+    if (hold) localStorage.setItem(HOLD_STORAGE_KEY, hold.holdId)
+  })
+
   return {
     seatMap,
     progress,
@@ -132,6 +203,7 @@ export const useBookingStore = defineStore('booking', () => {
     holdSeats,
     proceedToCheckout,
     releaseHold,
+    restoreHold,
     fetchSeats,
   }
 })

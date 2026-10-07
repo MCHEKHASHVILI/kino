@@ -5,10 +5,13 @@ import { useRoute } from 'vue-router'
 import BaseLayout from '@/layouts/BaseLayout.vue'
 import ModalManager from '@/components/ModalManager.vue'
 import { useFilterOptionsStore } from '@/stores/filterOptions'
+import { useBookingStore } from '@/stores/booking'
 const route = useRoute()
 
 // Shared by filters and booking, loaded once per page load
 useFilterOptionsStore().fetchFilterOptions()
+// Seats held before a reload come back with the booking modal open on checkout
+useBookingStore().restoreHold()
 const layout = computed(() => route.meta.layout || BaseLayout)
 </script>
 

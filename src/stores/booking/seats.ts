@@ -34,6 +34,11 @@ export const useBookingSeatsStore = defineStore('booking.seats', () => {
     selectedSeats.value = selectedSeats.value.filter((selected) => selected.seatId !== seatId)
   }
 
+  // Restoring a hold after a reload, the seats come from the hold instead of map clicks
+  function setSeats(seats: SelectedSeat[]) {
+    selectedSeats.value = seats
+  }
+
   // Seat map click: picks a free seat or drops an already picked one
   function toggleSeat(seat: Seat) {
     if (isSelected(seat.id)) removeSeat(seat.id)
@@ -76,6 +81,7 @@ export const useBookingSeatsStore = defineStore('booking.seats', () => {
     addSeat,
     removeSeat,
     toggleSeat,
+    setSeats,
     syncWithMap,
     reset,
     isBlocked,

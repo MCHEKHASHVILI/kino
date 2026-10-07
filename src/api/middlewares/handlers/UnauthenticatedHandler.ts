@@ -14,7 +14,8 @@ export class UnauthenticatedHandler extends ErrorHandler {
     const authStore = useAuthStore()
     if (!authStore.isAuthenticated) return
 
-    authStore.logout()
+    // Token is already rejected, so no logout request, only the stored session is cleared
+    authStore.clearSession()
     router.push({
       name: 'action.modal',
       params: { name: 'LogInModal' },
