@@ -43,13 +43,20 @@ watch(() => session.value?.id, fetchSeats, { immediate: true })
       <div class="flex flex-row justify-between gap-5">
         <div class="flex w-180 flex-col justify-between gap-8">
           <div class="flex w-full flex-row gap-2 rounded-full bg-card">
-            <label v-for="stage in ['seats', 'checkout']" class="badge-progress">
+            <!-- Shows the current step only, steps change through the store (next checkout) -->
+            <label
+              v-for="stage in ['seats', 'checkout']"
+              :key="stage"
+              class="badge-progress"
+              :aria-current="progress === stage ? 'step' : undefined"
+            >
               <input
                 type="radio"
                 class="sr-only"
                 :value="stage"
-                v-model="progress"
+                :checked="progress === stage"
                 name="progress"
+                disabled
               />
               <span class="uppercase" v-text="stage" />
             </label>

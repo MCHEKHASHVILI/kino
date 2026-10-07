@@ -73,6 +73,10 @@
   @variant has-[:checked] {
     @apply bg-helper-red;
   }
+  /* Read-only step indicator (booking modal), profile tabs stay clickable */
+  @variant has-[:disabled] {
+    @apply cursor-default;
+  }
 }
 
 @utility badge-ticket {
