@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { onUnmounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import BaseModal from '@/layouts/modals/BaseModal.vue'
 import SeatMapView from '@/components/ui/Booking/SeatMap.vue'
@@ -15,7 +15,7 @@ import { useBookingTicketTypesStore } from '@/stores/booking/ticketTypes'
 const { activeModal } = storeToRefs(useModalStore())
 const { movie } = storeToRefs(useMovieStore())
 const bookingStore = useBookingStore()
-const { fetchSeats, proceedToCheckout } = bookingStore
+const { fetchSeats, proceedToCheckout, closeBooking } = bookingStore
 const { selectedSeats, maxSeats } = storeToRefs(useBookingSeatsStore())
 const { selectedTickets } = storeToRefs(useBookingTicketTypesStore())
 const { session, subtitle } = storeToRefs(useBookingSessionStore())
@@ -23,6 +23,9 @@ const { seatMap, progress, subtotal, isHolding } = storeToRefs(bookingStore)
 
 // Modal is mounted on every open, so immediate also refetches the map each time it opens
 watch(() => session.value?.id, fetchSeats, { immediate: true })
+
+// Every way of closing (close button, navigation, another modal) unmounts it, a page reload does not
+onUnmounted(closeBooking)
 </script>
 <template>
   <BaseModal

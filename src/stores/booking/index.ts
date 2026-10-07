@@ -122,6 +122,15 @@ export const useBookingStore = defineStore('booking', () => {
   }
 
   /**
+   * Booking modal closed without paying: seats go back onto the map (API asks for this on close)
+   * and the flow is back on step 1, the picked seats stay so reopening the same session keeps them
+   */
+  async function closeBooking() {
+    progress.value = 'seats'
+    await releaseHold()
+  }
+
+  /**
    * Brings back a hold after a page reload: the hold, its session (with movie) and the selection,
    * then reopens the booking modal on checkout.
    * Expired hold (isLive false) is released on the API before its id is forgotten.
@@ -203,6 +212,7 @@ export const useBookingStore = defineStore('booking', () => {
     holdSeats,
     proceedToCheckout,
     releaseHold,
+    closeBooking,
     restoreHold,
     fetchSeats,
   }
