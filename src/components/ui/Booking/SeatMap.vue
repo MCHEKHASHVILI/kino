@@ -3,10 +3,12 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useSeatMapViewport } from '@/composables/useSeatMapViewport'
 import { useBookingStore } from '@/stores/booking'
+import { useBookingSeatsStore } from '@/stores/booking/seats'
 
-const bookingStore = useBookingStore()
-const { isBlocked, isDisabled } = bookingStore
-const { seatMap, selectedSeatIds } = storeToRefs(bookingStore)
+const { seatMap } = storeToRefs(useBookingStore())
+const seatsStore = useBookingSeatsStore()
+const { isBlocked, isDisabled } = seatsStore
+const { selectedSeatIds } = storeToRefs(seatsStore)
 
 const viewport = ref<HTMLElement | null>(null)
 const canvas = ref<HTMLElement | null>(null)

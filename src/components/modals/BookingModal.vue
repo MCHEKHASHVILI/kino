@@ -7,11 +7,13 @@ import IconLoader from '@/components/shared/IconLoader.vue'
 import { useModalStore } from '@/stores/modals'
 import { useMovieStore } from '@/stores/movie'
 import { useBookingStore } from '@/stores/booking'
+import { useBookingSeatsStore } from '@/stores/booking/seats'
 
 const { activeModal } = storeToRefs(useModalStore())
 const { movie } = storeToRefs(useMovieStore())
 const bookingStore = useBookingStore()
-const { fetchSeats, removeSeat } = bookingStore
+const { fetchSeats } = bookingStore
+const { removeSeat } = useBookingSeatsStore()
 const { session, seatMap, heldSeats, progress, subtitle, ticketTypes } = storeToRefs(bookingStore)
 
 // Modal is mounted on every open, so immediate also refetches the map each time it opens

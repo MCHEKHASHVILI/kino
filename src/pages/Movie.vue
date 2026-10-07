@@ -3,7 +3,6 @@ import { watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMovieStore } from '@/stores/movie'
 import { useBookingStore } from '@/stores/booking'
-import { useSessionsStore } from '@/stores/sessions'
 import AppLink from '@/components/shared/AppLink.vue'
 import IconLoader from '@/components/shared/IconLoader.vue'
 import SessionDatesSkeleton from '@/components/ui/MovieSessions/SessionDatesSkeleton.vue'
@@ -15,9 +14,6 @@ const { fetchMovie, groupVenueSessionsByHalls } = movieStore
 const { selectSession } = useBookingStore()
 const { movie, sessionDate, movieSessions, isMovieLoading, isSessionsLoading } =
   storeToRefs(movieStore)
-
-// Ticket types for the booking modal, fetched once per visit
-useSessionsStore().fetchFilterOptions()
 
 // Component is reused when navigating between movies, so refetch on slug change
 watch(() => props.slug, fetchMovie, { immediate: true })
