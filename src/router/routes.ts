@@ -1,6 +1,10 @@
 import Home from '@/pages/Home.vue'
 import Sessions from '@/pages/Sessions.vue'
+import Movie from '@/pages/Movie.vue'
 import NotFound from '@/pages/NotFound.vue'
+import Profile from '@/pages/Profile.vue'
+import { PROFILE_TABS, type ProfileTab } from '@/stores/profile'
+import type { RouteLocationNormalizedGeneric } from 'vue-router'
 const routes = [
   {
     path: '/',
@@ -11,6 +15,24 @@ const routes = [
     path: '/sessions',
     name: 'sessions',
     component: Sessions,
+  },
+  {
+    path: '/movies/:slug',
+    name: 'movie',
+    component: Movie,
+    props: true,
+    meta: { overlayHeader: true },
+  },
+  {
+    // ?tab=personal|tickets selects the tab, so each one is linkable and survives refresh
+    path: '/profile',
+    name: 'profile',
+    component: Profile,
+    meta: { requiresAuth: true },
+    beforeEnter: (to: RouteLocationNormalizedGeneric) => {
+      if (PROFILE_TABS.includes(to.query.tab as ProfileTab)) return
+      return { ...to, query: { ...to.query, tab: PROFILE_TABS[0] } }
+    },
   },
   {
     path: '/:pathMatch(.*)*',

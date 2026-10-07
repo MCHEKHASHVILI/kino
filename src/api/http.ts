@@ -1,6 +1,7 @@
 import axios, { type AxiosError } from 'axios'
 import { env } from '@/config/env'
 import type { ApiErrorResponse, ApiErrorStatus } from '@types'
+import { useAuthStore } from '@/stores/auth'
 import { ApiError } from './ApiError'
 import { errorHandlers, isHandledStatus } from './middlewares/errors'
 
@@ -26,6 +27,17 @@ export const http = axios.create({
   headers: {
     Accept: 'application/json',
   },
+})
+
+/**
+ * Global request middleware.
+ * Sends the session token as Bearer, so protected endpoints (holds, orders) know the user.
+ * Store is resolved per request, it is not ready yet when this module loads
+ */
+http.interceptors.request.use((config) => {
+  const { token } = useAuthStore()
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
 })
 
 /**

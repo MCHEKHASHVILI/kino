@@ -13,6 +13,7 @@
 
 /* Declared Utilities */
 @import './base/typography.css';
+@import './components/badge.css';
 @import './components/buttons.css';
 @import './components/inputs.css';
 

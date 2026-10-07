@@ -17,3 +17,11 @@ export interface Movie {
   genres: Gerne[]
   formats: Format[]
 }
+
+export interface MovieDetails extends Movie {
+  isNotified: boolean
+  synopsis: string
+  director: string
+  cast: string
+  availableDates: string[]
+}

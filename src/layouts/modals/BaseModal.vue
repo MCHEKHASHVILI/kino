@@ -40,7 +40,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-[#00000033]"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-shadow shadow-[0px_20px_50px_-10px]"
       >
         <div
           class="relative flex w-fit transform flex-col gap-6 rounded-[28px] border border-raised bg-page p-8 text-primary transition-all"

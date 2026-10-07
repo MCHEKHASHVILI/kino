@@ -82,6 +82,12 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', data.token)
   }
 
+  // Profile updates return the fresh user, token stays the same
+  function setUser(data: UserProfile) {
+    user.value = data
+    localStorage.setItem('user', JSON.stringify(data))
+  }
+
   function logout() {
     user.value = null
     token.value = null
@@ -97,6 +103,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     authenticate,
+    setUser,
     isAuthorized,
     isAuthenticated,
     initials,

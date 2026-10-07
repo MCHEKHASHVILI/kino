@@ -1,0 +1,98 @@
+@utility badge-default {
+  @apply flex flex-row items-center gap-1;
+  @apply w-fit rounded-full bg-tint-white px-2 py-1 text-label-s text-primary;
+  & .badge-hero {
+    @apply px-2.5 py-1.5;
+  }
+}
+@utility badge-red {
+  @apply flex flex-row items-center gap-1;
+  @apply w-fit rounded-full bg-tint-red px-2 py-1 text-label-s text-helper-red;
+  & .badge-hero {
+    @apply px-2.5 py-1.5;
+  }
+}
+
+@utility badge-days {
+  @apply flex flex-col items-center justify-center gap-1.75;
+  @apply px-3 py-2.5;
+  @apply h-20 w-20;
+  @apply rounded-2xl;
+  @apply bg-card;
+  @apply text-primary;
+  @apply cursor-pointer;
+  @apply transform transition-all duration-300 ease-in-out;
+
+  @variant hover {
+    /* @apply bg-raised; */
+    @apply transform transition-all duration-300 ease-in-out;
+  }
+  @variant has-[:checked] {
+    @apply w-27.25;
+    @apply bg-helper-red;
+  }
+}
+
+@utility badge-progress {
+  @apply flex flex-row items-center justify-center;
+  @apply px-4 py-2.5;
+  @apply w-full;
+  @apply rounded-full;
+  @apply bg-transparent;
+  @apply text-label-s text-primary;
+  @apply cursor-pointer;
+  @apply transform transition-all ease-out duration-initial;
+
+  @variant hover {
+    /* @apply bg-raised; */
+    @apply transform transition-all ease-out duration-initial;
+  }
+  @variant has-[:checked] {
+    @apply bg-helper-red;
+  }
+}
+
+@utility badge-ticket {
+  @apply relative flex w-fit rounded-2xl bg-page text-white shadow-[0_1px_2px_0_#00000033];
+  @variant hover {
+  }
+  @variant active {
+  }
+}
+
+@utility badge-seat {
+  @apply h-13 w-13;
+  @apply rounded-[10px];
+  @apply text-h3 text-primary;
+  @apply border border-disabled;
+  @apply bg-card shadow-[0_1px_2px_0px_var(--color-shadow)];
+  @apply flex items-center justify-center;
+  @apply cursor-pointer;
+
+  @variant has-[:checked] {
+    @apply border-page bg-helper-red;
+  }
+
+  @variant has-[:focus-visible] {
+    @apply outline-2 outline-offset-2 outline-helper-red;
+  }
+
+  &.is-checked {
+    @apply border-page bg-helper-red;
+  }
+
+  &.is-sold {
+    @apply cursor-not-allowed border-transparent! text-disabled;
+  }
+  &.is-held {
+    @apply cursor-not-allowed! border-none! bg-card! text-secondary;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http:\/\/www.w3.org/2000/svg' viewBox='0 0 52 52'%3E%3Cg transform='rotate(-37.44 26 26)' fill='white' fill-opacity='.045'%3E%3Crect x='-30' y='2.775' width='112' height='9.29'/%3E%3Crect x='-30' y='21.355' width='112' height='9.29'/%3E%3Crect x='-30' y='39.935' width='112' height='9.29'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 100% 100%;
+  }
+  &.is-disabled {
+    @apply cursor-not-allowed opacity-40;
+  }
+  &.is-unavailable {
+    @apply pointer-events-none cursor-default border-transparent! bg-transparent! text-transparent!;
+  }
+}

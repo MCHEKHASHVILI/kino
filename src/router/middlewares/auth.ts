@@ -13,7 +13,7 @@ export function requiresAuthentication(to: RouteLocationNormalizedGeneric) {
   if (requiresAuth && !authStore.isAuthenticated) {
     return {
       name: 'action.modal',
-      params: { reason: 'LogInModal' },
+      params: { name: 'LogInModal' },
       // You can also add a query string to redirect back later
       query: { redirect: to.fullPath },
     }

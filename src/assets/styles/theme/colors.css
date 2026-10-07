@@ -19,4 +19,10 @@
   --color-tint-red: #ec30131a;
   --color-tint-green: #4ade801a;
   --color-tint-warning: #e27e041a;
+
+  /** Overlay Colors */
+  --color-overlay-scrim: #070c1c33;
+
+  /** Shadows */
+  --color-shadow: #00000033;
 }

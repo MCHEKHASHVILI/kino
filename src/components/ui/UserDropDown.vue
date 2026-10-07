@@ -129,7 +129,7 @@ watch(() => route.fullPath, closeInstantly)
         <ul class="flex flex-col gap-0.5 pt-1">
           <li class="block">
             <AppLink
-              :to="{ name: 'action.modal', params: { name: 'LogInModal' } }"
+              :to="{ name: 'profile', query: { tab: 'personal' } }"
               @click="closeInstantly"
               class="flex items-center justify-start gap-2 px-5 py-2.5 text-label-m text-primary capitalize hover:bg-card"
             >
@@ -139,7 +139,7 @@ watch(() => route.fullPath, closeInstantly)
           </li>
           <li class="block">
             <AppLink
-              :to="{ name: 'action.modal', params: { name: 'LogInModal' } }"
+              :to="{ name: 'profile', query: { tab: 'tickets' } }"
               @click="closeInstantly"
               class="flex items-center justify-start gap-2 px-5 py-2.5 text-label-m text-primary capitalize hover:bg-card"
             >

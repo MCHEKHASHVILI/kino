@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppLink from '@/components/shared/AppLink.vue'
 import type { Movie } from '@/types'
 const props = defineProps<{ data: Movie[]; query?: string | null }>()
 
@@ -21,8 +22,15 @@ function splitTitle(title: string, query?: string | null) {
       >
     </div>
     <ul class="w-full">
-      <li v-for="movie in data" class="py-2 pr-5 pl-2.5">
-        <div class="flex w-full flex-row items-center gap-3.5">
+      <li
+        v-for="movie in data"
+        :key="movie.id"
+        class="transform rounded-[10px] py-2 pr-5 pl-2.5 transition-all ease-out duration-initial hover:bg-tint-white"
+      >
+        <AppLink
+          :to="{ name: 'movie', params: { slug: movie.slug } }"
+          class="flex w-full flex-row items-center gap-3.5"
+        >
           <div class="h-14 w-10 rounded-md">
             <img class="content-cover rounded-md" :src="movie.posterUrl" />
           </div>
@@ -48,7 +56,7 @@ function splitTitle(title: string, query?: string | null) {
             v-text="'coming soon'"
           />
           <span v-else class="text-label-m text-primary" v-text="'from ₾' + movie.fromPrice" />
-        </div>
+        </AppLink>
       </li>
     </ul>
   </div>

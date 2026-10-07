@@ -2,7 +2,7 @@
   /* Typography */
   --font-sans: 'Archivo', ui-sans-serif, system-ui, sans-serif;
   /* Screen Breakpoints */
-  --breakpoint-3xl: 1920px;
+  --breakpoint-3xl: 1728px;
   /* Container Sizes */
   --container-3xl: 97.875rem;
 }

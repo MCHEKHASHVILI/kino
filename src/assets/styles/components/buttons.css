@@ -1,20 +1,21 @@
 @utility btn-primary {
-  @apply py-3.25 px-5.5;
+  @apply px-5.5 py-3.25;
   @apply rounded-full;
   @apply bg-helper-red;
   @apply text-button;
   @apply cursor-pointer;
   @apply transform transition-all duration-300 ease-out;
-   @variant hover {
+  @variant hover {
     /** design not implemented yet */
   }
-   @variant disabled {
+  @variant disabled {
     @apply bg-disabled;
     @apply text-secondary;
+    @apply cursor-not-allowed;
   }
 }
 @utility btn-secondary {
-  @apply py-3.25 px-5.5;
+  @apply px-5.5 py-3.25;
   @apply rounded-full;
   @apply bg-primary;
   @apply text-button text-page;
@@ -26,7 +27,7 @@
 }
 
 @utility btn-transparent {
-  @apply py-3.25 px-5.5;
+  @apply px-5.5 py-3.25;
   @apply rounded-full;
   @apply bg-tint-white;
   @apply text-button text-primary;
@@ -40,32 +41,32 @@
 }
 
 @utility btn-notify {
-    @apply py-1.5 px-3;
-    @apply rounded-full;
-    @apply border border-secondary;
-    @apply text-label-s text-primary;
-    @apply cursor-pointer;
-    @apply transform transition-all duration-300 ease-out;
-    
-    @variant hover {
-        @apply bg-tint-white;
-    }
-    @variant checked {
-        @apply border-0;
-    }
+  @apply px-3 py-1.5;
+  @apply rounded-full;
+  @apply border border-secondary;
+  @apply text-label-s text-primary;
+  @apply cursor-pointer;
+  @apply transform transition-all duration-300 ease-out;
+
+  @variant hover {
+    @apply bg-tint-white;
+  }
+  @variant checked {
+    @apply border-0;
+  }
 }
 
 @utility btn-ghost {
-    @apply p-2.5;
-    @apply border-0 border-b-raised ;
-    @apply text-body-s text-primary;
-    @apply cursor-pointer;
-    @apply transform transition-all duration-300 ease-out;
-    
-    @variant hover {
-        @apply bg-card;
-    }
-    @variant checked {
-        @apply bg-raised;
-    }
+  @apply p-2.5;
+  @apply border-0 border-b-raised;
+  @apply text-body-s text-primary;
+  @apply cursor-pointer;
+  @apply transform transition-all duration-300 ease-out;
+
+  @variant hover {
+    @apply bg-card;
+  }
+  @variant checked {
+    @apply bg-raised;
+  }
 }
