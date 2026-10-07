@@ -132,7 +132,7 @@ watch(() => props.slug, fetchMovie, { immediate: true })
                   <div v-for="session in hall.sessions">
                     <AppLink
                       :to="{ name: 'action.modal', params: { name: 'BookingModal' } }"
-                      @click="selectSession(session)"
+                      @click="movie && selectSession(session, movie)"
                       class="badge-ticket"
                     >
                       <!-- Left: time + tags -->

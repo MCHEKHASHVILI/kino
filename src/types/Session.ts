@@ -22,7 +22,10 @@ export interface Session {
   movie: Movie
 }
 
+// Session as listed by movies/{slug}/sessions, the movie is implied by the URL so it is left out
+export type MovieSessionItem = Omit<Session, 'movie'>
+
 export interface MovieSession {
   venue: Venue
-  sessions: Session[]
+  sessions: MovieSessionItem[]
 }

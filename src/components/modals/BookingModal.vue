@@ -15,11 +15,11 @@ import { useBookingTicketTypesStore } from '@/stores/booking/ticketTypes'
 const { activeModal } = storeToRefs(useModalStore())
 const { movie } = storeToRefs(useMovieStore())
 const bookingStore = useBookingStore()
-const { fetchSeats } = bookingStore
+const { fetchSeats, proceedToCheckout } = bookingStore
 const { selectedSeats, maxSeats } = storeToRefs(useBookingSeatsStore())
 const { selectedTickets } = storeToRefs(useBookingTicketTypesStore())
 const { session, subtitle } = storeToRefs(useBookingSessionStore())
-const { seatMap, progress, subtotal } = storeToRefs(bookingStore)
+const { seatMap, progress, subtotal, isHolding } = storeToRefs(bookingStore)
 
 // Modal is mounted on every open, so immediate also refetches the map each time it opens
 watch(() => session.value?.id, fetchSeats, { immediate: true })
@@ -94,7 +94,13 @@ watch(() => session.value?.id, fetchSeats, { immediate: true })
               <span class="text primary text-label-s uppercase" v-text="'subtotal'" />
               <span class="text-h1 text-primary" v-text="'₾ ' + subtotal" />
             </div>
-            <button class="btn-primary uppercase" v-text="'next checkout'" :disabled="true" />
+            <button
+              type="button"
+              class="btn-primary uppercase"
+              :disabled="!selectedSeats.length || isHolding"
+              @click="proceedToCheckout"
+              v-text="'next checkout'"
+            />
           </div>
         </div>
       </div>

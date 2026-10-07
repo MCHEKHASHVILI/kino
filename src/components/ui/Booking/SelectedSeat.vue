@@ -9,7 +9,7 @@ defineProps<{ ticket: SelectedTicket }>()
 
 const { removeSeat } = useBookingSeatsStore()
 const ticketTypesStore = useBookingTicketTypesStore()
-const { setTicketType } = ticketTypesStore
+const { setTicketType, isTicketTypeAllowed } = ticketTypesStore
 const { ticketTypes } = storeToRefs(ticketTypesStore)
 </script>
 
@@ -43,6 +43,7 @@ const { ticketTypes } = storeToRefs(ticketTypesStore)
             :name="'ticket-type-' + ticket.seatId"
             :value="type.slug"
             :checked="ticket.ticketType === type.slug"
+            :disabled="!isTicketTypeAllowed(type.slug)"
             @change="setTicketType(ticket.seatId, type.slug)"
           />
           <span class="text-primary" v-text="type.name + ' ' + type.priceRatio * 100 + '%'" />

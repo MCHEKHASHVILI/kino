@@ -50,6 +50,10 @@
   @variant has-[:checked] {
     @apply bg-helper-red;
   }
+  /* Ticket type not allowed for the film's age rating */
+  @variant has-[:disabled] {
+    @apply cursor-not-allowed opacity-40;
+  }
 }
 
 @utility badge-progress {

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import type { MovieDetails, MovieSession, Session } from '@types'
+import type { MovieDetails, MovieSession, MovieSessionItem } from '@types'
 import { useApiStore } from './api'
 
 export const useMovieStore = defineStore('movie', () => {
@@ -54,13 +54,13 @@ export const useMovieStore = defineStore('movie', () => {
   }
 
   // Several sessions can share a hall, group them so each hall renders once with its sessions
-  function groupVenueSessionsByHalls(sessions: Session[]) {
+  function groupVenueSessionsByHalls(sessions: MovieSessionItem[]) {
     const halls = sessions.reduce((accumulator, session) => {
       const group = accumulator.get(session.hall.id)
       if (group) group.sessions.push(session)
       else accumulator.set(session.hall.id, { hall: session.hall, sessions: [session] })
       return accumulator
-    }, new Map<number, { hall: Session['hall']; sessions: Session[] }>())
+    }, new Map<number, { hall: MovieSessionItem['hall']; sessions: MovieSessionItem[] }>())
 
     return [...halls.values()]
   }

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { SeatHold, SeatMap, Session } from '@types'
+import type { Movie, MovieSessionItem, SeatHold, SeatMap } from '@types'
 import { isApiError } from '@/api/ApiError'
 import { useApiStore } from '../api'
 import { useBookingSeatsStore } from './seats'
@@ -35,9 +35,10 @@ export const useBookingStore = defineStore('booking', () => {
   )
 
   // Actions
-  // Store outlives the modal, so a new booking starts from step 1 with nothing selected
-  function selectSession(value: Session) {
-    sessionStore.setSession(value)
+  // Store outlives the modal, so a new booking starts from step 1 with nothing selected.
+  // Movie page sessions come without their movie, it is attached here so the age rating is known
+  function selectSession(value: MovieSessionItem, movie: Movie) {
+    sessionStore.setSession({ ...value, movie })
     seatsStore.reset()
     heldSeats.value = null
     contestedSeats.value = []
@@ -88,6 +89,13 @@ export const useBookingStore = defineStore('booking', () => {
     contestedSeats.value = data?.contested ?? []
   }
 
+  // Next checkout: holds the collected seats, the step only changes once the hold succeeded
+  async function proceedToCheckout() {
+    if (!seatsStore.selectedSeats.length) return
+    await holdSeats()
+    if (heldSeats.value) progress.value = 'checkout'
+  }
+
   // Seats go straight back onto the map instead of waiting for the hold to lapse
   async function releaseHold() {
     const holdId = heldSeats.value?.holdId
@@ -122,6 +130,7 @@ export const useBookingStore = defineStore('booking', () => {
     subtotal,
     selectSession,
     holdSeats,
+    proceedToCheckout,
     releaseHold,
     fetchSeats,
   }
