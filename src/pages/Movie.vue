@@ -3,6 +3,7 @@ import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useMovieStore } from '@/stores/movie'
+import { useRecentlyViewedStore } from '@/stores/recentlyViewed'
 import MovieBadges from '@/components/ui/Movie/MovieBadges.vue'
 import SessionDatesSkeleton from '@/components/ui/MovieSessions/SessionDatesSkeleton.vue'
 import VenueSessionsSkeleton from '@/components/ui/MovieSessions/VenueSessionsSkeleton.vue'
@@ -26,6 +27,10 @@ watch(
   (slug) => fetchMovie(slug, queryDate()),
   { immediate: true },
 )
+
+// Each opened movie goes to the home page's Recently viewed
+const { add: addRecentlyViewed } = useRecentlyViewedStore()
+watch(movie, (value) => value && addRecentlyViewed(value))
 
 // ?date= changed on the same movie (back / forward, or a pick below)
 watch(

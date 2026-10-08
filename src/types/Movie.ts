@@ -12,6 +12,8 @@ export interface Movie {
   releaseDate: string
   isComingSoon: boolean
   isFeatured: boolean
+  // Signed in user asked to be told when a coming soon title gets sessions
+  isNotified: boolean
   fromPrice: number
   ageRating: AgeRating
   genres: Gerne[]
@@ -19,7 +21,6 @@ export interface Movie {
 }
 
 export interface MovieDetails extends Movie {
-  isNotified: boolean
   synopsis: string
   director: string
   cast: string
@@ -28,6 +29,5 @@ export interface MovieDetails extends Movie {
 
 // Featured and now playing lists carry the synopsis too
 export interface MovieWithSynopsis extends Movie {
-  isNotified: boolean
   synopsis: string
 }
