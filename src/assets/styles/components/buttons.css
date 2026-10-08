@@ -2,7 +2,7 @@
   @apply px-5.5 py-3.25;
   @apply rounded-full;
   @apply bg-helper-red;
-  @apply text-button;
+  @apply text-button text-primary;
   @apply cursor-pointer;
   @apply transform transition-all duration-300 ease-out;
   @variant hover {

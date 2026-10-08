@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import type { UserProfile, Venue } from '@types'
 import { useApiStore } from './api'
 import { useAuthStore } from './auth'
+import { useModalStore } from './modals'
 
 // Profile page tabs, selected by ?tab= query param
 export const PROFILE_TABS = ['personal', 'tickets'] as const
@@ -58,6 +59,7 @@ export const useProfileStore = defineStore('profile', () => {
 
     authStore.setUser(response.data)
     fill(response.data)
+    useModalStore().openModal('ProfileUpdatedModal')
     return true
   }
 
