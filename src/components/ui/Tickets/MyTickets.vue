@@ -3,13 +3,14 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import TicketCard from '@/components/ui/Tickets/TicketCard.vue'
+import TicketCardSkeleton from '@/components/ui/Tickets/TicketCardSkeleton.vue'
 import { TICKET_GROUPS, useTicketsStore, type TicketGroup } from '@/stores/tickets'
 
 const route = useRoute()
 const router = useRouter()
 
 // Tickets are fetched by the profile page, which also needs them for the tab's count badge
-const { ordersByGroup, isLoading } = storeToRefs(useTicketsStore())
+const { orders, ordersByGroup, isLoading } = storeToRefs(useTicketsStore())
 
 // Upcoming unless ?group= names another one, kept in the query like the profile tab
 const ticketGroup = computed<TicketGroup>({
@@ -35,7 +36,9 @@ const ticketGroup = computed<TicketGroup>({
         <span class="uppercase" v-text="value + ' ' + ordersByGroup[value].length" />
       </label>
     </div>
-    <div class="flex flex-col gap-4">
+    <!-- Skeleton only on first load, a refetch (refused refund) keeps the cards -->
+    <TicketCardSkeleton v-if="isLoading && !orders.length" />
+    <div v-else class="flex flex-col gap-4">
       <span
         v-if="!ordersByGroup[ticketGroup].length && !isLoading"
         class="text-body-m text-secondary"
