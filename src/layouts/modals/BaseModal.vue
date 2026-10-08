@@ -3,7 +3,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import IconLoader from '@/components/shared/IconLoader.vue'
 import { onClickOutside } from '@vueuse/core'
 const modalRef = ref(null)
-const props = defineProps({ isOpen: Boolean, title: String, subtitle: String })
+const props = defineProps({ isOpen: Boolean, title: String, subtitle: String, hideHeader: Boolean })
 const emit = defineEmits(['close'])
 
 watch(
@@ -46,7 +46,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
           class="relative flex w-fit transform flex-col gap-6 rounded-[28px] border border-raised bg-page p-8 text-primary transition-all"
           ref="modalRef"
         >
-          <div class="w-full">
+          <div v-if="!hideHeader" class="w-full">
             <div class="flex flex-row justify-between">
               <div class="flex w-full flex-col gap-2">
                 <div v-if="title" class="flex flex-row items-start justify-start">

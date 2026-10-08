@@ -4,9 +4,9 @@ import { computed, defineAsyncComponent } from 'vue'
 
 const store = useModalStore()
 
-// 1. Import all .vue files in the /modals folder
+// 1. Import all .vue files in the /modals folder and its subfolders, keyed by file name
 // { eager: true } loads them immediately; omit it for lazy loading
-const modalFiles = import.meta.glob('@/components/modals/*.vue')
+const modalFiles = import.meta.glob('@/components/modals/**/*.vue')
 
 // 2. Map filenames to their dynamic component loaders
 const modals = Object.fromEntries(

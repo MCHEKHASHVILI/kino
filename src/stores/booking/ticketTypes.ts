@@ -7,6 +7,13 @@ import { useBookingSessionStore } from './session'
 
 const DEFAULT_TICKET_TYPE: TicketTypeSlug = 'adult'
 
+// Ticket type names counted in first seen order, e.g. ['2 × Adult', '1 × Child']
+export function countTicketTypes(names: string[]) {
+  const counts = new Map<string, number>()
+  names.forEach((name) => counts.set(name, (counts.get(name) ?? 0) + 1))
+  return [...counts].map(([name, count]) => `${count} × ${name}`)
+}
+
 // Ticket type picked for each selected seat, seats without a pick are adult
 export const useBookingTicketTypesStore = defineStore('booking.ticketTypes', () => {
   const filterOptionsStore = useFilterOptionsStore()

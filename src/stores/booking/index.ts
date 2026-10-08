@@ -39,6 +39,25 @@ export const useBookingStore = defineStore('booking', () => {
       ) / 100,
   )
 
+  // Hold matches the current selection (same seats, same ticket types), so checkout needs no new hold
+  const isSelectionHeld = computed(() => {
+    const held = heldSeats.value?.seats ?? []
+    const tickets = ticketTypesStore.selectedTickets
+    return (
+      held.length === tickets.length &&
+      tickets.every((ticket) =>
+        held.some(
+          (seat) => seat.seatId === ticket.seatId && seat.ticketType.slug === ticket.ticketType,
+        ),
+      )
+    )
+  })
+
+  // Step indicator becomes clickable once seats are held and some are still picked
+  const canSwitchStep = computed(
+    () => !!heldSeats.value?.seats.length && !!seatsStore.selectedSeats.length && !isHolding.value,
+  )
+
   // Actions
   // Store outlives the modal, so a new booking starts from step 1 with nothing selected.
   // Movie page sessions come without their movie, it is attached here so the age rating is known
@@ -95,11 +114,24 @@ export const useBookingStore = defineStore('booking', () => {
     contestedSeats.value = data?.contested ?? []
   }
 
-  // Next checkout: holds the collected seats, the step only changes once the hold succeeded
+  /**
+   * Next checkout: holds the collected seats, the step only changes once the hold succeeded.
+   * An unchanged selection is already held, re-holding would only restart its timer
+   */
   async function proceedToCheckout() {
     if (!seatsStore.selectedSeats.length) return
-    await holdSeats()
+    if (!isSelectionHeld.value) await holdSeats()
     if (heldSeats.value) progress.value = 'checkout'
+  }
+
+  /**
+   * Step indicator click. Back to seats keeps the hold (API: no release on checkout to step 1),
+   * forward goes through proceedToCheckout so a changed selection is held first
+   */
+  async function goToStep(step: 'seats' | 'checkout') {
+    if (!canSwitchStep.value || step === progress.value) return
+    if (step === 'seats') progress.value = 'seats'
+    else await proceedToCheckout()
   }
 
   /**
@@ -122,12 +154,31 @@ export const useBookingStore = defineStore('booking', () => {
   }
 
   /**
-   * Booking modal closed without paying: seats go back onto the map (API asks for this on close)
-   * and the flow is back on step 1, the picked seats stay so reopening the same session keeps them
+   * Booking modal closed: seats go back onto the map (API asks for this on close)
+   * and the flow is back on step 1, the picked seats stay so reopening the same session keeps them.
+   * After paying the hold is already forgotten, so nothing is released
    */
   async function closeBooking() {
     progress.value = 'seats'
     await releaseHold()
+  }
+
+  // Order paid: the hold became the order, so nothing is released, only the stored id goes
+  function forgetHold() {
+    heldSeats.value = null
+    localStorage.removeItem(HOLD_STORAGE_KEY)
+  }
+
+  /**
+   * Payment could not use the hold, back to step 1 on a fresh map.
+   * Without contested seats the hold expired, it is released so the stored id goes with it.
+   * With them (409) the lost seats drop out of the selection, the rest are held again on next checkout
+   */
+  async function returnToSeats(contested?: string[]) {
+    progress.value = 'seats'
+    if (!contested) await releaseHold()
+    await fetchSeats()
+    contestedSeats.value = contested ?? []
   }
 
   /**
@@ -211,8 +262,13 @@ export const useBookingStore = defineStore('booking', () => {
     selectSession,
     holdSeats,
     proceedToCheckout,
+    goToStep,
+    canSwitchStep,
+    isSelectionHeld,
     releaseHold,
     closeBooking,
+    forgetHold,
+    returnToSeats,
     restoreHold,
     fetchSeats,
   }

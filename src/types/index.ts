@@ -6,6 +6,7 @@ export * from './Format';
 export * from './Gerne';
 export * from './Language';
 export * from './Movie';
+export * from './Order';
 export * from './SeatHold';
 export * from './SeatMap';
 export * from './SelectedSeat';
