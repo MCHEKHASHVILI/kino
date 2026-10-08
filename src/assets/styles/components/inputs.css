@@ -1,53 +1,122 @@
+/**
+ * Header search: the bar (.field) and its results dropdown (.box) under one root.
+ * Direct children only, so .field / .box inside the results never pick these up
+ */
 @utility search {
-  @apply flex items-center;
-  @apply gap-1;
-  @apply h-10.25 w-95;
-  @apply px-3 py-2;
-  @apply bg-tint-white;
-  @apply text-primary;
-  @apply rounded-full;
-  @apply border border-transparent;
-  @apply cursor-pointer;
-  @apply transition-all duration-0 ease-out;
+  @apply relative;
 
-  @variant hover {
-    @apply border-tint-white;
-  }
-
-  @variant focus-within {
-    @apply w-120;
-    @apply pl-5.5;
-    @apply ring-0 outline-none;
-    @apply border-tint-white;
-    @apply bg-tint-white backdrop-blur-[14px];
-    @apply gap-2;
-  }
-
-  & input {
-    @apply w-full;
-    @apply bg-transparent;
-    @apply border-0;
-    @apply p-0;
-    @apply placeholder:text-primary;
+  & > .field {
+    @apply flex items-center;
+    @apply gap-1;
+    @apply h-10.25 w-95;
+    @apply px-3 py-2;
+    @apply bg-tint-white;
+    @apply text-primary;
+    @apply rounded-full;
+    @apply border border-transparent;
     @apply cursor-pointer;
+    @apply transition-all duration-0 ease-out;
 
-    @variant focus {
+    @variant hover {
+      @apply border-tint-white;
+    }
+
+    @variant focus-within {
+      @apply w-120;
+      @apply pl-5.5;
       @apply ring-0 outline-none;
-      @apply placeholder:text-disabled;
+      @apply border-tint-white;
+      @apply bg-tint-white backdrop-blur-[14px];
+      @apply gap-2;
+    }
+
+    & input {
+      @apply w-full;
+      @apply bg-transparent;
+      @apply border-0;
+      @apply p-0;
+      @apply placeholder:text-primary;
+      @apply cursor-pointer;
+
+      @variant focus {
+        @apply ring-0 outline-none;
+        @apply placeholder:text-disabled;
+      }
+    }
+  }
+
+  & > .box {
+    @apply absolute top-11.5 left-0;
+    @apply p-2;
+    @apply w-full;
+    @apply rounded-2xl;
+    @apply border border-raised;
+    @apply bg-page;
+    @apply shadow-[0px_20px_48px_-8px_var(--color-shadow),0px_2px_6px_0px_var(--color-shadow)];
+
+    & .content {
+      @apply px-6 pt-8 pb-7;
     }
   }
 }
-@utility search-box {
-  @apply absolute top-11.5 left-0;
-  @apply p-2;
-  @apply w-full;
-  @apply rounded-2xl;
-  @apply border border-raised;
-  @apply bg-page;
-  /**@Todo shadow */
 
-  & .content {
-    @apply px-6 pt-8 pb-7;
+/**
+ * Checkbox: label wraps a visually hidden input, a drawn box and the text
+ * <label class="checkbox">
+ *   <input type="checkbox" class="sr-only" />
+ *   <span class="mark" aria-hidden="true" />
+ *   <span>Label</span>
+ * </label>
+ * States come from the input through has-[], the whole label is the click target
+ */
+@utility checkbox {
+  @apply flex flex-row items-center gap-2.5;
+  @apply text-label-m text-primary;
+  @apply cursor-pointer select-none;
+
+  & > .mark {
+    @apply relative flex size-4.5 shrink-0 items-center justify-center;
+    @apply rounded-[5px] border-2 border-disabled bg-transparent;
+    @apply transition-colors duration-200 ease-out;
+
+    /* Tick drawn with two borders, hidden until checked */
+    &::after {
+      content: '';
+      @apply h-2.25 w-1.25 -translate-y-px rotate-45;
+      @apply border-r-2 border-b-2 border-primary;
+      @apply opacity-0 transition-opacity duration-200 ease-out;
+    }
+  }
+
+  @variant hover {
+    & > .mark {
+      @apply border-secondary;
+    }
+  }
+
+  @variant has-[:checked] {
+    & > .mark {
+      @apply border-helper-red bg-helper-red;
+
+      &::after {
+        @apply opacity-100;
+      }
+    }
+  }
+
+  /* Keyboard focus only, a mouse click shows no ring */
+  @variant has-[:focus-visible] {
+    & > .mark {
+      @apply ring-2 ring-helper-red/40 ring-offset-2 ring-offset-card;
+    }
+  }
+
+  @variant has-[:disabled] {
+    @apply cursor-not-allowed text-disabled;
+
+    & > .mark {
+      @apply border-disabled bg-transparent;
+    }
   }
 }
 
@@ -61,7 +130,6 @@
   & .text-input {
     @apply relative;
     @apply flex items-center;
-    /* @apply grow; */
     @apply rounded-lg border-0;
     @apply text-label-s text-secondary;
     @apply bg-card;
@@ -102,64 +170,15 @@
           @apply shadow-[inset_0_0_0_1000px_var(--color-card)];
         }
       }
-      /* @variant disabled {
-        @apply cursor-not-allowed;
-      } */
     }
 
-    /* & .prefix {
-      @apply absolute inset-y-0 left-0 pl-3.25;
-      @apply py-3;
-      @apply leading-5.5;
-      @apply w-fit;
-      @apply flex items-center;
-      @apply cursor-default;
-      @apply text-grayscale-700;
-    }*/
     & .suffix {
       @apply absolute inset-y-0 right-0 pr-3.75;
       @apply py-3;
       @apply text-[16px];
-      /* @apply leading-5.5; */
       @apply w-fit;
       @apply flex items-center;
       @apply cursor-default;
-      /* @apply text-grayscale-300; */
-
-      @variant peer-hover {
-        /* @apply text-grayscale-300; */
-      }
-
-      @variant peer-focus {
-        /* @apply text-grayscale-400; */
-      }
-      @variant peer-disabled {
-        /* @apply text-grayscale-300; */
-      }
     }
-    /* Selectpicker */
-    /* & button {
-      @apply flex flex-row items-center justify-between;
-      @apply grow;
-      @apply w-fit;
-      @apply min-w-full;
-      @apply border-grayscale-200 rounded-lg border-[1.5px] border-solid;
-      @apply text-body-xs text-grayscale-400;
-      @apply leading-5.5;
-      @apply py-3 pr-3.75 pl-3.25;
-      @apply cursor-pointer;
-      @variant hover {
-        @apply border-grayscale-300;
-        @apply text-grayscale-200;
-      }
-      @variant focus {
-        @apply border-grayscale-400;
-        @apply ring-0 outline-none;
-      }
-      
-      & .suffix {
-        @apply text-[22px] leading-5.5;
-      }
-    } */
   }
 }

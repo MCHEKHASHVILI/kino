@@ -21,15 +21,30 @@
   @apply bg-card;
   @apply text-primary;
   @apply cursor-pointer;
-  @apply transform transition-all duration-300 ease-in-out;
+  @apply transform transition-all duration-300 ease-out;
+
+  &.small {
+    @apply h-13.5 w-9.25;
+    @apply rounded-lg;
+    @apply px-1.5 py-2.5;
+    @apply gap-1.5;
+    @apply bg-raised;
+    @apply transform transition-all duration-300 ease-out;
+
+    @variant hover {
+      @apply bg-card;
+    }
+    @variant has-[:checked] {
+      @apply w-9.25;
+    }
+  }
 
   @variant hover {
     /* @apply bg-raised; */
-    @apply transform transition-all duration-300 ease-in-out;
   }
   @variant has-[:checked] {
     @apply w-27.25;
-    @apply bg-helper-red;
+    @apply bg-helper-red!;
   }
 }
 

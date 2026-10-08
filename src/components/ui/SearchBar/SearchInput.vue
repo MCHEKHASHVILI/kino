@@ -62,8 +62,8 @@ const removeAfterEach = useRouter().afterEach(() => inputRef.value?.blur())
 onUnmounted(removeAfterEach)
 </script>
 <template>
-  <div class="relative">
-    <div class="search">
+  <div class="search">
+    <div class="field">
       <IconLoader v-if="toggleMagnifyingGlass" :name="'MagnifyingGlass'" />
       <input
         ref="input"
@@ -76,7 +76,7 @@ onUnmounted(removeAfterEach)
       />
       <IconLoader v-if="toggleExit" :name="'Clear'" class="text-[24px]" @click="model = null" />
     </div>
-    <div v-if="toggleSearchBox" class="search-box" @mousedown.prevent>
+    <div v-if="toggleSearchBox" class="box" @mousedown.prevent>
       <div v-if="!model || !model.length" class="content">
         <EmptyBox />
       </div>
