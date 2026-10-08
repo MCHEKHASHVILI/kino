@@ -5,6 +5,8 @@ import FeaturedSlider from '@/components/ui/Home/FeaturedSlider.vue'
 import CardBig from '@/components/ui/Movie/CardBig.vue'
 import CardMedium from '@/components/ui/Movie/CardMedium.vue'
 import CardSmall from '@/components/ui/Movie/CardSmall.vue'
+import CardBigSkeleton from '@/components/ui/Movie/CardBigSkeleton.vue'
+import CardMediumSkeleton from '@/components/ui/Movie/CardMediumSkeleton.vue'
 import { useCatalogueStore } from '@/stores/catalogue'
 import { useRecentlyViewedStore } from '@/stores/recentlyViewed'
 
@@ -42,7 +44,15 @@ const { movies: recentlyViewed } = storeToRefs(useRecentlyViewedStore())
       <!-- No gap: the cards' own padding spaces them (no dead zone between them), -mx-2 keeps
            the first and last card in line with the section -->
       <HorizontalScroll class="-mx-2" wheel="shift">
-        <CardBig v-for="movie in nowPlaying ?? []" :key="movie.id" :movie="movie" growth="inline" />
+        <!-- null until the first response, then the cards (or nothing, if the request failed) -->
+        <CardBigSkeleton v-if="!nowPlaying" />
+        <CardBig
+          v-for="movie in nowPlaying ?? []"
+          v-else
+          :key="movie.id"
+          :movie="movie"
+          growth="inline"
+        />
       </HorizontalScroll>
     </section>
     <!-- divider -->
@@ -55,7 +65,8 @@ const { movies: recentlyViewed } = storeToRefs(useRecentlyViewedStore())
         <span class="text-label-m text-helper-red capitalize" v-text="'see all'" />
       </div>
       <HorizontalScroll class="gap-4" wheel="shift">
-        <CardMedium v-for="movie in comingSoon ?? []" :key="movie.id" :movie="movie" />
+        <CardMediumSkeleton v-if="!comingSoon" />
+        <CardMedium v-for="movie in comingSoon ?? []" v-else :key="movie.id" :movie="movie" />
       </HorizontalScroll>
     </section>
   </div>
