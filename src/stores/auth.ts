@@ -4,6 +4,7 @@ import type { AuthenticationResponse, UserAuthenticationForm, UserProfile } from
 import { useModalStore } from './modals'
 import { useApiStore } from './api'
 import { useBookingStore } from './booking'
+import { useTicketsStore } from './tickets'
 
 export const useAuthStore = defineStore('auth', () => {
   const api = useApiStore()
@@ -69,6 +70,8 @@ export const useAuthStore = defineStore('auth', () => {
     const modalStore = useModalStore()
     const { closeModal } = modalStore
     closeModal()
+    // In the background, the modal doesn't wait for it
+    useTicketsStore().fetchTickets()
   }
 
   function authenticate(data: AuthenticationResponse) {
@@ -103,6 +106,7 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null
     localStorage.removeItem('user')
     localStorage.removeItem('token')
+    useTicketsStore().reset()
   }
 
   return {

@@ -59,6 +59,12 @@ export const useTicketsStore = defineStore('tickets', () => {
     refundCandidate.value = null
   }
 
+  // Signed out, the next user must not see these
+  function reset() {
+    orders.value = []
+    refundCandidate.value = null
+  }
+
   /**
    * POST /orders/{reference}/refund, the seats go back onto the map.
    * The response is the updated order, it replaces the card's order in place.
@@ -89,6 +95,7 @@ export const useTicketsStore = defineStore('tickets', () => {
     isRefunding,
     refundErrorOf,
     fetchTickets,
+    reset,
     askRefund,
     clearRefundCandidate,
     refund,
