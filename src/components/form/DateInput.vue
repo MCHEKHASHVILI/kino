@@ -151,7 +151,7 @@ onKeyStroke('Escape', () => isOpen.value && close())
       />
       <span
         class="suffix pointer-events-none"
-        :class="errors && errors.length ? 'text-helper-red' : 'text-secondary'"
+        :class="errors && errors.length ? 'text-helper-red' : 'text-primary'"
       >
         <IconLoader name="Calendar" class="text-[16px]" />
       </span>
