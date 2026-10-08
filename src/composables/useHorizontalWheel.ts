@@ -11,8 +11,13 @@ const EASING = 0.18
  * Wheel ticks move a target and the row eases towards it frame by frame, so fast turns add up
  * into one smooth glide instead of restarting a smooth scroll on every tick.
  * @param element the scrollable row (overflow-x auto)
+ * @param options.requireShift only Shift+wheel scrolls the row, the plain wheel keeps scrolling
+ * the page (for rows inside a long list)
  */
-export function useHorizontalWheel(element: Ref<HTMLElement | null>) {
+export function useHorizontalWheel(
+  element: Ref<HTMLElement | null>,
+  options: { requireShift?: boolean } = {},
+) {
   let target = 0
   let frame: number | null = null
 
@@ -35,19 +40,31 @@ export function useHorizontalWheel(element: Ref<HTMLElement | null>) {
     'wheel',
     (event: WheelEvent) => {
       const row = element.value
-      if (!row || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return
+      if (!row || (options.requireShift && !event.shiftKey)) return
+      // Some browsers turn Shift+wheel into deltaX themselves, take whichever axis has the turn
+      const delta = event.shiftKey && !event.deltaY ? event.deltaX : event.deltaY
+      // Sideways swipes without Shift (trackpads) scroll natively
+      if (!event.shiftKey && Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return
 
       // Idle, start from where the row really is (it may have been dragged or swiped)
       if (frame === null) target = row.scrollLeft
       const maxScroll = row.scrollWidth - row.clientWidth
-      const canMove = event.deltaY < 0 ? target > 0 : target < maxScroll - 1
-      if (!canMove) return
+      const canMove = delta < 0 ? target > 0 : target < maxScroll - 1
+      if (!delta || !canMove) return
 
       event.preventDefault()
-      target = Math.min(Math.max(target + event.deltaY, 0), maxScroll)
+      target = Math.min(Math.max(target + delta, 0), maxScroll)
       if (frame === null) frame = requestAnimationFrame(animate)
     },
     // Not passive, the page must not scroll while the row takes the wheel
     { passive: false },
   )
+
+  // Drops a running glide, e.g. when the row is grabbed for dragging
+  function stop() {
+    if (frame !== null) cancelAnimationFrame(frame)
+    frame = null
+  }
+
+  return { stop }
 }

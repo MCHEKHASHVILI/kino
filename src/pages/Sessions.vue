@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { useTemplateRef, watch } from 'vue'
+import { watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import SelectInput from '@/components/form/SelectInput.vue'
 import SessionCard from '@/components/ui/Sessions/SessionCard.vue'
 import SessionsListSkeleton from '@/components/ui/Sessions/SessionsListSkeleton.vue'
+import FilterGroupSkeleton from '@/components/ui/Sessions/FilterGroupSkeleton.vue'
 import { useFilterOptionsStore } from '@/stores/filterOptions'
 import { useSessionsStore } from '@/stores/sessions'
-import { useHorizontalWheel } from '@/composables/useHorizontalWheel'
+import HorizontalScroll from '@/components/shared/HorizontalScroll.vue'
 import { useSessionsFilters } from '@/composables/useSessionsFilters'
 
 // Option lists are loaded once at app start
@@ -47,9 +48,6 @@ watch(
   (key) => key && fetchSessions(params.value),
   { immediate: true },
 )
-
-// Mouse wheel scrolls the dates sideways while the cursor is over them
-useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
 </script>
 
 <template>
@@ -74,6 +72,8 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
 
       <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'venue'" />
+        <!-- Until the filter options arrive (e.g. opened from a shared link), the lists are empty -->
+        <FilterGroupSkeleton v-if="!isFilterOptionsSettled" :rows="4" />
         <label v-for="venue in venuesOptions" :key="venue.slug" class="checkbox">
           <input type="checkbox" class="sr-only" :value="venue.slug" v-model="venues" />
           <span class="mark" aria-hidden="true" />
@@ -91,8 +91,8 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
       <!-- min-w-0: a fieldset grows to fit its content by default, so the row would never scroll -->
       <fieldset class="flex min-w-0 flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'date'" />
-        <!-- Scrolls sideways with the scrollbar hidden -->
-        <div ref="datesRow" class="no-scrollbar flex flex-row flex-nowrap gap-1.75 overflow-x-auto">
+        <!-- Scrolls sideways with the scrollbar hidden, mouse wheel included -->
+        <HorizontalScroll class="gap-1.75">
           <label v-for="day in dates" :key="day.value" class="small badge-days shrink-0">
             <input type="radio" class="sr-only" name="date" :value="day.value" v-model="date" />
             <span
@@ -104,7 +104,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
               v-text="day.date.toLocaleDateString('en-US', { day: '2-digit' })"
             />
           </label>
-        </div>
+        </HorizontalScroll>
       </fieldset>
 
       <!-- divider -->
@@ -113,6 +113,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
       <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'format'" />
         <!-- Only the formats the picked venues have -->
+        <FilterGroupSkeleton v-if="!isFilterOptionsSettled" :rows="5" />
         <label v-for="format in availableFormats" :key="format.slug" class="checkbox">
           <input type="checkbox" class="sr-only" :value="format.slug" v-model="formats" />
           <span class="mark" aria-hidden="true" />
@@ -125,6 +126,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
 
       <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'language'" />
+        <FilterGroupSkeleton v-if="!isFilterOptionsSettled" :rows="4" />
         <label v-for="language in languagesOptions" :key="language.slug" class="checkbox">
           <input type="checkbox" class="sr-only" :value="language.slug" v-model="languages" />
           <span class="mark" aria-hidden="true" />
@@ -137,6 +139,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
 
       <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'time of day'" />
+        <FilterGroupSkeleton v-if="!isFilterOptionsSettled" :rows="3" />
         <label v-for="band in timeBandsOptions" :key="band.id" class="checkbox">
           <input type="checkbox" class="sr-only" :value="band.id" v-model="bands" />
           <span class="mark" aria-hidden="true" />
@@ -167,11 +170,16 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
     <div class="col-start-2 row-start-2 flex flex-col gap-6">
       <div class="flex flex-row items-center justify-between gap-6">
         <span
+          v-if="meta"
           class="text-label-m text-primary"
-          v-text="meta ? `Showing ${meta.totalSessions} sessions` : ''"
+          v-text="`Showing ${meta.totalSessions} sessions`"
         />
+        <div v-else class="h-5 w-40 animate-pulse rounded bg-raised" />
+        <!-- Sort labels come with the filter options -->
+        <div v-if="!isFilterOptionsSettled" class="h-5 w-56 animate-pulse rounded bg-raised" />
         <!-- Plain picker: "Sort" prefix, the chosen order and the arrow, no field around it -->
         <SelectInput
+          v-else
           v-model="sort"
           variant="plain"
           prefix="Sort"
@@ -211,14 +219,15 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
                 />
               </div>
             </div>
-            <div class="flex flex-row flex-wrap gap-3">
+            <!-- One row per movie, scrolls sideways when the cards don't fit -->
+            <HorizontalScroll class="gap-3" wheel="shift">
               <SessionCard
                 v-for="session in group.sessions"
                 :key="session.id"
                 :session="session"
                 :movie="group.movie"
               />
-            </div>
+            </HorizontalScroll>
           </article>
           <!-- divider, between groups only -->
           <div v-if="index < (groups?.length ?? 0) - 1" class="h-px w-full bg-raised" />

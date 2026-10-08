@@ -31,9 +31,7 @@ export const useBookingTicketTypesStore = defineStore('booking.ticketTypes', () 
   )
 
   // Minimum age of the session's film, 0 (no restriction) while unknown
-  const sessionMinAge = computed(
-    () => Number.parseInt(sessionStore.session?.movie?.ageRating?.minAge ?? '', 10) || 0,
-  )
+  const sessionMinAge = computed(() => sessionStore.session?.movie?.ageRating?.minAge ?? 0)
 
   // One ticket per selected seat in pick order, priced from the session (adult) price
   const selectedTickets = computed<SelectedTicket[]>(() => {

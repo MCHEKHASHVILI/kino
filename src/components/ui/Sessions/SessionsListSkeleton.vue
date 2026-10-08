@@ -16,12 +16,12 @@ withDefaults(defineProps<{ groups?: number; cards?: number }>(), { groups: 3, ca
             <div class="h-4 w-16 rounded bg-raised" />
           </div>
         </div>
-        <div class="flex flex-row flex-wrap gap-3">
+        <div class="flex flex-row flex-nowrap gap-3 overflow-hidden">
           <!-- Session card: time and format, then where and seats / price -->
           <div
             v-for="card in cards"
             :key="card"
-            class="flex w-63 flex-col justify-between gap-3 rounded-2xl bg-card p-3.75"
+            class="flex w-63 shrink-0 flex-col justify-between gap-3 rounded-2xl bg-card p-3.75"
           >
             <div class="flex flex-row items-center justify-between">
               <div class="h-6 w-14 rounded bg-raised" />

@@ -8,7 +8,8 @@ export interface UserProfile {
   fullName: string
   mobileNumber: string
   dateOfBirth: string
-  age: number
+  // Derived from dateOfBirth, null until the profile is complete
+  age: number | null
   preferredVenue: Venue
   profileComplete: boolean
 //   password: UserAuthenticationForm['password']

@@ -32,3 +32,19 @@ UTC (`10:00` / `10:00+00:00`).
 - Add `refundableUntil: string | null` to `Order` in `src/types/Order.ts`.
 - The button keeps using `isRefundable` only. A stale `true` already gets a 422,
   shows its message and refetches the tickets.
+
+### Session start time zone (`startsAt`)
+
+_Added 2026-10-08._
+
+**Context:** session cards on the sessions page are disabled once the session has started,
+by comparing `session.startsAt` with the current time.
+
+**Problem:** `startsAt` comes back as the hall time marked UTC, e.g. `time: "10:00"` with
+`startsAt: "2026-10-08T10:00:00+00:00"`. If 10:00 is Tbilisi time (UTC+4), the real start is
+`06:00Z`, and the card is disabled four hours late.
+
+**Ask:** is `startsAt` true UTC or Tbilisi time? Ideally it carries its real offset
+(`+04:00`), or the session gets a flag like `hasStarted` so the client doesn't decide.
+
+**Once answered:** adjust `hasStarted` in `src/components/ui/Sessions/SessionCard.vue`.
