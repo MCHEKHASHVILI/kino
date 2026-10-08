@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import SelectInput from '@/components/form/SelectInput.vue'
 import SessionCard from '@/components/ui/Sessions/SessionCard.vue'
@@ -8,6 +8,7 @@ import FilterGroupSkeleton from '@/components/ui/Sessions/FilterGroupSkeleton.vu
 import { useFilterOptionsStore } from '@/stores/filterOptions'
 import { useSessionsStore } from '@/stores/sessions'
 import HorizontalScroll from '@/components/shared/HorizontalScroll.vue'
+import BasePagination from '@/components/shared/BasePagination.vue'
 import { useSessionsFilters } from '@/composables/useSessionsFilters'
 
 // Option lists are loaded once at app start
@@ -40,35 +41,80 @@ const sessionsStore = useSessionsStore()
 const { fetchSessions } = sessionsStore
 const { groups, meta, isLoading } = storeToRefs(sessionsStore)
 
+const results = useTemplateRef<HTMLElement>('results')
+// Only the page changed (pager, back / forward): a whole different set of films is coming,
+// so the list shows the skeleton instead of dimming the old page
+const isPageSwitch = ref(false)
+
+// Same params apart from the page
+function onlyPageChanged(key: string, previous: string) {
+  const withoutPage = (value: string) => JSON.stringify({ ...JSON.parse(value), page: 0 })
+  return withoutPage(key) === withoutPage(previous)
+}
+
 // Any change in the URL refetches, back and forward included. Compared by value,
 // so a new but equal params object (e.g. an unrelated query key) sends no request.
 // Waits for the filter options, a link is only checked against them once they are in
 watch(
   () => (isFilterOptionsSettled.value ? JSON.stringify(params.value) : null),
-  (key) => key && fetchSessions(params.value),
+  (key, previous) => {
+    if (!key) return
+    isPageSwitch.value = !!previous && onlyPageChanged(key, previous)
+    if (isPageSwitch.value) startPageSwitch()
+    fetchSessions(params.value)
+  },
   { immediate: true },
 )
+
+/**
+ * Results keep their height while switching pages. Otherwise the shorter skeleton (and then a
+ * page of a different length) would cut the smooth scroll short and make the sticky filters
+ * jump with the row. Released once the new page is in and the scroll has settled
+ */
+const lockedHeight = ref<number | null>(null)
+let isScrolling = false
+let switchId = 0
+
+function releaseLock() {
+  if (!isScrolling && !isLoading.value) lockedHeight.value = null
+}
+
+function startPageSwitch() {
+  const id = ++switchId
+  lockedHeight.value = results.value?.offsetHeight ?? null
+  isScrolling = true
+  // The pager is at the bottom of a long list, the new page starts at the top
+  results.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  // scrollend where supported, a timeout as well (no scroll happens when already in place)
+  const settled = () => {
+    if (id !== switchId) return
+    isScrolling = false
+    releaseLock()
+  }
+  window.addEventListener('scrollend', settled, { once: true })
+  setTimeout(settled, 1000)
+}
+
+// Skeleton until the new page is in
+watch(isLoading, (loading) => {
+  if (loading) return
+  isPageSwitch.value = false
+  releaseLock()
+})
 </script>
 
 <template>
   <!-- Row 1: title over the filters column. Row 2: filters and results, so both start at the same top -->
-  <section class="grid grid-cols-[18.75rem_minmax(0,1fr)] gap-x-12.75 gap-y-6 px-12.75 py-10">
+  <section class="grid grid-cols-[18.75rem_minmax(0,1fr)] gap-x-12.75 gap-y-6 px-12.75">
     <div class="col-start-1 flex flex-col gap-1.75">
       <h1 class="text-h2 text-primary capitalize" v-text="'sessions'" />
       <span class="text-body-s text-secondary" v-text="'Browse showtimes across all venues'" />
     </div>
 
-    <!-- Filters. self-start: sticky inside its cell, which is as tall as the results -->
-    <aside class="sticky top-6 col-start-1 flex flex-col gap-6 self-start rounded-2xl bg-card p-6">
-      <div class="flex flex-row items-center justify-between">
-        <h2 class="text-h3 text-primary capitalize" v-text="'filters'" />
-        <button
-          type="button"
-          class="cursor-pointer text-label-s text-helper-red first-letter:uppercase"
-          @click="clearFilters"
-          v-text="'clear all filters'"
-        />
-      </div>
+    <!-- Filters. self-start: sticky inside its cell, which is as tall as the results.
+         No taller than the window (24px off top and bottom), longer filters scroll inside it -->
+    <aside class="top-6 col-start-1 flex flex-col gap-6 self-start rounded-2xl bg-card p-6">
+      <h2 class="text-h3 text-primary capitalize" v-text="'filters'" />
 
       <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'venue'" />
@@ -157,17 +203,32 @@ watch(
 
       <!-- divider -->
       <div class="h-px w-full bg-raised" />
-      <!-- Picked venues, formats, languages and time bands, the date is always set -->
-      <span
-        class="text-center text-body-s text-secondary"
-        v-text="
-          activeFiltersCount + (activeFiltersCount === 1 ? ' filter' : ' filters') + ' active'
-        "
-      />
+      <div class="flex flex-col justify-between gap-3">
+        <!-- Keeps the date and sort, nothing to clear while no filter is picked -->
+        <button
+          type="button"
+          class="btn-notify py-2.25 first-letter:uppercase"
+          :disabled="!activeFiltersCount"
+          @click="clearFilters"
+          v-text="'clear all filters'"
+        />
+        <!-- Picked venues, formats, languages and time bands, the date is always set -->
+        <span
+          class="text-center text-body-s text-secondary"
+          v-text="
+            activeFiltersCount + (activeFiltersCount === 1 ? ' filter' : ' filters') + ' active'
+          "
+        />
+      </div>
     </aside>
 
     <!-- Filtered sessions, top aligned with the filters -->
-    <div class="col-start-2 row-start-2 flex flex-col gap-6">
+    <!-- At least as tall as the filters, so a short page doesn't collapse the row under them -->
+    <div
+      ref="results"
+      class="col-start-2 row-start-2 flex min-h-[calc(100dvh-3rem)] scroll-mt-6 flex-col gap-6"
+      :style="lockedHeight ? { minHeight: lockedHeight + 'px' } : undefined"
+    >
       <div class="flex flex-row items-center justify-between gap-6">
         <span
           v-if="meta"
@@ -187,8 +248,8 @@ watch(
         />
       </div>
 
-      <!-- Skeleton only on first load (nothing to show yet), later loads dim the current list -->
-      <SessionsListSkeleton v-if="!groups" />
+      <!-- First load, or switching pages. Filter, date and sort changes dim the current list instead -->
+      <SessionsListSkeleton v-if="!groups || (isPageSwitch && isLoading)" />
       <!-- One group per movie, its sessions already sorted by start time.
            The previous page stays dimmed while the next one loads -->
       <div
@@ -241,30 +302,13 @@ watch(
       </div>
 
       <!-- Pages count movies, not sessions -->
-      <nav
+      <BasePagination
         v-if="meta && meta.lastPage > 1"
-        class="flex flex-row items-center justify-center gap-2"
-        aria-label="Pagination"
-      >
-        <button
-          type="button"
-          class="btn-transparent uppercase"
-          :disabled="meta.currentPage <= 1 || isLoading"
-          @click="goToPage(meta.currentPage - 1)"
-          v-text="'previous'"
-        />
-        <span
-          class="text-label-m text-secondary"
-          v-text="meta.currentPage + ' / ' + meta.lastPage"
-        />
-        <button
-          type="button"
-          class="btn-transparent uppercase"
-          :disabled="meta.currentPage >= meta.lastPage || isLoading"
-          @click="goToPage(meta.currentPage + 1)"
-          v-text="'next'"
-        />
-      </nav>
+        :current="meta.currentPage"
+        :last="meta.lastPage"
+        :disabled="isLoading"
+        @change="goToPage"
+      />
     </div>
   </section>
 </template>

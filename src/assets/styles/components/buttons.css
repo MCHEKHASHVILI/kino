@@ -76,3 +76,25 @@
     @apply bg-raised;
   }
 }
+
+/* Pagination: round page buttons, prev / next arrows use it too. Active page via aria-current */
+@utility btn-page {
+  @apply flex size-10 shrink-0 items-center justify-center;
+  @apply rounded-full bg-transparent;
+  @apply text-label-m text-secondary;
+  @apply cursor-pointer;
+  @apply transition-colors duration-200 ease-out;
+
+  @variant hover {
+    @apply bg-raised;
+  }
+  &[aria-current='page'] {
+    @apply bg-helper-red text-primary;
+    @apply cursor-default;
+  }
+  /* After hover, so the arrows on the first / last page don't light up */
+  @variant disabled {
+    @apply bg-transparent text-disabled;
+    @apply cursor-not-allowed;
+  }
+}
