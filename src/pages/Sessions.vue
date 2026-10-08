@@ -169,13 +169,13 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
           class="text-label-m text-primary"
           v-text="meta ? `Showing ${meta.totalSessions} sessions` : ''"
         />
-        <div class="w-60">
-          <SelectInput
-            v-model="sort"
-            :options="sortsOptions.map((sort) => ({ value: sort.id, label: sort.label }))"
-            placeholder="Sort by"
-          />
-        </div>
+        <!-- Plain picker: "Sort" prefix, the chosen order and the arrow, no field around it -->
+        <SelectInput
+          v-model="sort"
+          variant="plain"
+          prefix="Sort"
+          :options="sortsOptions.map((sort) => ({ value: sort.id, label: sort.label }))"
+        />
       </div>
 
       <!-- One group per movie, its sessions already sorted by start time.

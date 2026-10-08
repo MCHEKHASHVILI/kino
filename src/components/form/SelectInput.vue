@@ -7,13 +7,20 @@ type Value = string | number | null
 
 const model = defineModel<Value>({ default: null })
 
-const props = defineProps<{
-  label?: string
-  // Shown when nothing is picked, also offered as the first option to clear the value
-  placeholder?: string
-  options: { value: string | number; label: string }[]
-  errors?: string[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    label?: string
+    // Shown when nothing is picked, also offered as the first option to clear the value
+    placeholder?: string
+    options: { value: string | number; label: string }[]
+    errors?: string[]
+    // field: looks like the other inputs. plain: no background or border, sized to its text
+    variant?: 'field' | 'plain'
+    // Plain only, text before the chosen label, e.g. "Sort"
+    prefix?: string
+  }>(),
+  { variant: 'field' },
+)
 
 const root = useTemplateRef<HTMLElement>('root')
 const isOpen = ref(false)
@@ -62,9 +69,29 @@ onClickOutside(root, close)
 </script>
 
 <template>
-  <div ref="root" class="input-group relative w-full">
+  <div ref="root" class="input-group relative" :class="variant === 'plain' ? 'w-fit' : 'w-full'">
     <label v-if="label" v-text="label" :class="{ 'text-helper-red!': errors && errors.length }" />
-    <div class="text-input">
+    <!-- Plain: prefix, chosen label and arrow in one transparent row -->
+    <button
+      v-if="variant === 'plain'"
+      type="button"
+      class="flex cursor-pointer flex-row items-center gap-2 rounded-[10px] pr-3.5 pl-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-helper-red/40"
+      aria-haspopup="listbox"
+      :aria-expanded="isOpen"
+      @click="isOpen ? close() : open()"
+      @keydown="onKeydown"
+    >
+      <span v-if="prefix" class="text-body-m text-secondary" v-text="prefix" />
+      <span class="text-body-m text-primary" v-text="selectedLabel ?? placeholder ?? ''" />
+      <IconLoader
+        name="Arrow"
+        :class="
+          'text-[16px] text-primary transition-transform duration-200' +
+          (isOpen ? ' rotate-180' : '')
+        "
+      />
+    </button>
+    <div v-else class="text-input">
       <!-- Looks like TextInput's input, opens a styled list instead of the browser's -->
       <button
         type="button"
@@ -93,7 +120,8 @@ onClickOutside(root, close)
     <ul
       v-if="isOpen"
       role="listbox"
-      class="absolute top-full left-0 z-20 mt-2 flex max-h-64 w-full flex-col gap-1 overflow-y-auto rounded-2xl border border-raised bg-page p-2"
+      class="absolute top-full z-20 mt-2 flex max-h-64 flex-col gap-1 overflow-y-auto rounded-2xl border border-raised bg-page p-2"
+      :class="variant === 'plain' ? 'right-0 w-max min-w-full' : 'left-0 w-full'"
     >
       <li
         v-for="(item, index) in items"

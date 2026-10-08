@@ -6,6 +6,9 @@ import { useFilterOptionsStore } from '@/stores/filterOptions'
 
 type ListKey = 'venues' | 'formats' | 'languages' | 'bands'
 
+// API's sort when none is sent (showtime, earliest first)
+const DEFAULT_SORT = 'time_asc'
+
 // Singular, comma separated in the URL (venue=galleria,batumi), the request still sends venues[]=…
 const URL_KEYS: Record<ListKey, string> = {
   venues: 'venue',
@@ -133,15 +136,16 @@ export function useSessionsFilters() {
     set: (value) => (selectedFormats.value = value),
   })
 
-  // null is the API default (showtime, earliest first), an unknown sort counts as the default
-  const sort = computed<string | null>({
+  // Always a value so the sort picker shows a label. The API default stays out of the URL
+  // and the request, an unknown sort counts as the default
+  const sort = computed<string>({
     get: () => {
       const value = route.query.sort
-      if (typeof value !== 'string') return null
+      if (typeof value !== 'string') return DEFAULT_SORT
       const valid = sortsOptions.value.map((option) => option.id)
-      return !valid.length || valid.includes(value) ? value : null
+      return !valid.length || valid.includes(value) ? value : DEFAULT_SORT
     },
-    set: (value) => replaceQuery({ sort: value ?? undefined }),
+    set: (value) => replaceQuery({ sort: value === DEFAULT_SORT ? undefined : value }),
   })
 
   // Whole numbers from 1, anything else is page 1 (which stays out of the URL)
@@ -172,7 +176,7 @@ export function useSessionsFilters() {
   const params = computed<SessionsParams>(() => ({
     date: date.value,
     page: page.value,
-    ...(sort.value ? { sort: sort.value } : {}),
+    ...(sort.value !== DEFAULT_SORT ? { sort: sort.value } : {}),
     ...(venues.value.length ? { venues: venues.value } : {}),
     ...(formats.value.length ? { formats: formats.value } : {}),
     ...(languages.value.length ? { languages: languages.value } : {}),
