@@ -16,24 +16,36 @@ const dates = Array.from({ length: 7 }, (_, index) => {
   return date
 })
 
+// API label "Morning (before 12:00)" split into "Morning" and "before 12:00" for the two tone label
+function splitBandLabel(label: string) {
+  const [name = '', ...rest] = label.split(' ')
+  return { name, hours: rest.join(' ').replace(/^\((.*)\)$/, '$1') }
+}
+
 // Mouse wheel scrolls the dates sideways while the cursor is over them
 useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
 </script>
 
 <template>
-  <section class="flex flex-row items-start gap-8 px-12.75 py-10">
-    <!-- Filters -->
-    <aside class="sticky top-6 flex w-75 shrink-0 flex-col gap-6 rounded-[20px] bg-card p-5">
+  <!-- Row 1: title over the filters column. Row 2: filters and results, so both start at the same top -->
+  <section class="grid grid-cols-[18.75rem_minmax(0,1fr)] gap-x-8 gap-y-6 px-12.75 py-10">
+    <div class="col-start-1 flex flex-col gap-1.75">
+      <h1 class="text-h2 text-primary capitalize" v-text="'sessions'" />
+      <span class="text-body-s text-secondary" v-text="'Browse showtimes across all venues'" />
+    </div>
+
+    <!-- Filters. self-start: sticky inside its cell, which is as tall as the results -->
+    <aside class="sticky top-6 col-start-1 flex flex-col gap-6 self-start rounded-2xl bg-card p-6">
       <div class="flex flex-row items-center justify-between">
         <h2 class="text-h3 text-primary capitalize" v-text="'filters'" />
         <button
           type="button"
-          class="cursor-pointer text-label-s text-helper-red uppercase"
-          v-text="'reset'"
+          class="cursor-pointer text-label-s text-helper-red first-letter:uppercase"
+          v-text="'clear all filters'"
         />
       </div>
 
-      <fieldset class="flex flex-col gap-2.5">
+      <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'venue'" />
         <label v-for="venue in venuesOptions" :key="venue.slug" class="checkbox">
           <input type="checkbox" class="sr-only" :value="venue.slug" />
@@ -45,6 +57,9 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
           </span>
         </label>
       </fieldset>
+
+      <!-- divider -->
+      <div class="h-px w-68 bg-raised" />
 
       <!-- min-w-0: a fieldset grows to fit its content by default, so the row would never scroll -->
       <fieldset class="flex min-w-0 flex-col gap-3">
@@ -65,7 +80,10 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
         </div>
       </fieldset>
 
-      <fieldset class="flex flex-col gap-2.5">
+      <!-- divider -->
+      <div class="h-px w-full bg-raised" />
+
+      <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'format'" />
         <label v-for="format in formatsOptions" :key="format.slug" class="checkbox">
           <input type="checkbox" class="sr-only" :value="format.slug" />
@@ -74,7 +92,10 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
         </label>
       </fieldset>
 
-      <fieldset class="flex flex-col gap-2.5">
+      <!-- divider -->
+      <div class="h-px w-full bg-raised" />
+
+      <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'language'" />
         <label v-for="language in languagesOptions" :key="language.slug" class="checkbox">
           <input type="checkbox" class="sr-only" :value="language.slug" />
@@ -83,24 +104,37 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
         </label>
       </fieldset>
 
-      <fieldset class="flex flex-col gap-2.5">
+      <!-- divider -->
+      <div class="h-px w-full bg-raised" />
+
+      <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'time of day'" />
         <label v-for="band in timeBandsOptions" :key="band.id" class="checkbox">
           <input type="checkbox" class="sr-only" :value="band.id" />
           <span class="mark" aria-hidden="true" />
-          <span v-text="band.label" />
+          <!-- e.g. Morning · before 12:00, the hours in secondary text like the venue's city -->
+          <span>
+            <span v-text="splitBandLabel(band.label).name" />
+            <span
+              v-if="splitBandLabel(band.label).hours"
+              class="text-body-s text-secondary"
+              v-text="' · ' + splitBandLabel(band.label).hours"
+            />
+          </span>
         </label>
       </fieldset>
+
+      <!-- divider -->
+      <div class="h-px w-full bg-raised" />
+      <!-- Picked venues, formats, languages and time bands once filtering is wired up -->
+      <span class="text-center text-body-s text-secondary" v-text="'0 filters active'" />
     </aside>
 
-    <!-- Filtered sessions -->
-    <div class="flex min-w-0 grow flex-col gap-6">
-      <div class="flex flex-row items-end justify-between gap-6">
-        <div class="flex flex-col gap-1.75">
-          <h1 class="text-h2 text-primary capitalize" v-text="'sessions'" />
-          <!-- meta.totalSessions -->
-          <span class="text-body-s text-secondary" v-text="'Showing 0 sessions'" />
-        </div>
+    <!-- Filtered sessions, top aligned with the filters -->
+    <div class="col-start-2 row-start-2 flex flex-col gap-6">
+      <div class="flex flex-row items-center justify-between gap-6">
+        <!-- meta.totalSessions -->
+        <span class="text-label-m text-primary" v-text="'Showing 12 sessions'" />
         <div class="w-60">
           <SelectInput
             :model-value="null"
