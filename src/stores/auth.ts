@@ -2,7 +2,6 @@ import { defineStore, storeToRefs } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AuthenticationResponse, UserAuthenticationForm, UserProfile } from '@types'
 import { useModalStore } from './modals'
-import { isApiError } from '@/api/ApiError'
 import { useApiStore } from './api'
 import { useBookingStore } from './booking'
 import { useTicketsStore } from './tickets'
@@ -61,9 +60,12 @@ export const useAuthStore = defineStore('auth', () => {
       email: email.value,
       password: password.value,
     }
-    // On failure ApiError is kept in api store, read it with api.errorOf('login')
+    // On failure ApiError is kept in api store, read it with api.errorOf('login').
+    // Wrong credentials are 401 too, the global handler would only reopen this modal
     const response = await api
-      .post<{ data: AuthenticationResponse }>('login', 'login', credentials)
+      .post<{ data: AuthenticationResponse }>('login', 'login', credentials, {
+        skipErrorHandler: [401],
+      })
       .catch(() => null)
     if (!response) return
 
@@ -86,24 +88,18 @@ export const useAuthStore = defineStore('auth', () => {
 
   /**
    * App start with a stored token: GET /me refreshes the stored user (personal information).
-   * 401 means the token is stale (API: drop it, treat as guest), so the session is cleared
-   * without the global handler's login modal. Resolves whether the user is still signed in
+   * 401 means the token is stale, the global handler clears the session and opens the login modal.
+   * Resolves whether the user is still signed in
    */
   async function restoreSession(): Promise<boolean> {
     if (!isAuthenticated.value) return false
     try {
-      const response = await api.get<{ data: UserProfile }>('me', 'me', {
-        skipErrorHandler: [401],
-      })
+      const response = await api.get<{ data: UserProfile }>('me', 'me')
       setUser(response.data)
       return true
-    } catch (error) {
-      if (isApiError(error) && error.status === 401) {
-        clearSession()
-        return false
-      }
-      // Network or server error, the stored user stays
-      return true
+    } catch {
+      // Cleared by the handler on 401, a network or server error keeps the stored user
+      return isAuthenticated.value
     }
   }
 
