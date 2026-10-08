@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import ProfileForm from '@/components/ui/Profile/ProfileForm.vue'
 import MyTickets from '@/components/ui/Tickets/MyTickets.vue'
 import { PROFILE_TABS, useProfileStore, type ProfileTab } from '@/stores/profile'
 import { useTicketsStore } from '@/stores/tickets'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -27,8 +28,11 @@ const tab = computed<ProfileTab>({
   set: (value) => router.replace({ query: { ...route.query, tab: value } }),
 })
 
-// Once per visit rather than in the form, which remounts on every tab switch and would drop edits
-fill()
+const { user } = storeToRefs(useAuthStore())
+
+// Here rather than in the form, which remounts on every tab switch and would drop edits.
+// Refilled when the user changes, e.g. GET /me answering after the page opened
+watch(user, (value) => fill(value), { immediate: true })
 fetchVenues()
 
 // Once per visit, also for the tab's count badge. Refunds update the list from their response

@@ -14,8 +14,13 @@ const route = useRoute()
 useFilterOptionsStore().fetchFilterOptions()
 // Seats held before a reload come back with the booking modal open on checkout
 useBookingStore().restoreHold()
-// Signed in from a previous visit, tickets are ready like after a fresh login
-if (useAuthStore().isAuthenticated) useTicketsStore().fetchTickets()
+// Signed in from a previous visit: personal information is refreshed first, a stale token
+// is dropped there, then tickets are ready like after a fresh login
+useAuthStore()
+  .restoreSession()
+  .then((isSignedIn) => {
+    if (isSignedIn) useTicketsStore().fetchTickets()
+  })
 const layout = computed(() => route.meta.layout || BaseLayout)
 </script>
 

@@ -2,6 +2,7 @@ import { defineStore, storeToRefs } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AuthenticationResponse, UserAuthenticationForm, UserProfile } from '@types'
 import { useModalStore } from './modals'
+import { isApiError } from '@/api/ApiError'
 import { useApiStore } from './api'
 import { useBookingStore } from './booking'
 import { useTicketsStore } from './tickets'
@@ -83,6 +84,29 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', data.token)
   }
 
+  /**
+   * App start with a stored token: GET /me refreshes the stored user (personal information).
+   * 401 means the token is stale (API: drop it, treat as guest), so the session is cleared
+   * without the global handler's login modal. Resolves whether the user is still signed in
+   */
+  async function restoreSession(): Promise<boolean> {
+    if (!isAuthenticated.value) return false
+    try {
+      const response = await api.get<{ data: UserProfile }>('me', 'me', {
+        skipErrorHandler: [401],
+      })
+      setUser(response.data)
+      return true
+    } catch (error) {
+      if (isApiError(error) && error.status === 401) {
+        clearSession()
+        return false
+      }
+      // Network or server error, the stored user stays
+      return true
+    }
+  }
+
   // Profile updates return the fresh user, token stays the same
   function setUser(data: UserProfile) {
     user.value = data
@@ -119,6 +143,7 @@ export const useAuthStore = defineStore('auth', () => {
     clearSession,
     authenticate,
     setUser,
+    restoreSession,
     isAuthorized,
     isAuthenticated,
     initials,
