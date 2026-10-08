@@ -1,8 +1,9 @@
+import { defineStore, storeToRefs } from 'pinia'
 import { computed } from 'vue'
-import { useRoute, useRouter, type LocationQueryValue } from 'vue-router'
-import { storeToRefs } from 'pinia'
+import type { LocationQueryValue } from 'vue-router'
 import type { SessionsParams } from '@types'
-import { useFilterOptionsStore } from '@/stores/filterOptions'
+import router from '@/router'
+import { useFilterOptionsStore } from './filterOptions'
 
 type ListKey = 'venues' | 'formats' | 'languages' | 'bands'
 
@@ -34,18 +35,17 @@ function toList(value: LocationQueryValue | LocationQueryValue[] | undefined) {
 }
 
 /**
- * Sessions page state, kept in the URL (API: the whole view belongs in the address bar,
- * so deep links, refreshes and back and forward work), e.g.
- * /sessions?venue=galleria,batumi&date=2026-11-14&format=max&sort=price_asc&page=2
- * Date is always set (first of the seven days when missing), changing any filter or the sort
- * goes back to page 1, and picking venues narrows the formats to what those venues have.
+ * Sessions page state: date, filters, sort and page. The URL is the source of truth
+ * (API: the whole view belongs in the address bar, so deep links, refreshes and back and forward
+ * work), e.g. /sessions?venue=galleria,batumi&date=2026-11-14&format=max&sort=price_asc&page=2
+ * This store reads it and writes it, shared by the filters panel and the page (sort, pager, fetch).
  * Values the filter options don't know (old or edited links) are ignored
  */
-export function useSessionsFilters() {
-  const route = useRoute()
-  const router = useRouter()
+export const useSessionsFiltersStore = defineStore('sessionsFilters', () => {
   const { venuesOptions, formatsOptions, languagesOptions, timeBandsOptions, sortsOptions } =
     storeToRefs(useFilterOptionsStore())
+
+  const query = computed(() => router.currentRoute.value.query)
 
   // Valid values per filter, empty until the options load, then unknown values are dropped
   const known: Record<ListKey, () => string[]> = {
@@ -55,16 +55,19 @@ export function useSessionsFilters() {
     bands: () => timeBandsOptions.value.map((band) => band.id),
   }
 
-  // Today and the six days after it
+  // Today and the six days after it, one date is always in play (API: date defaults to today)
   const dates = Array.from({ length: 7 }, (_, index) => {
     const date = new Date()
     date.setDate(date.getDate() + index)
     return { value: toDateValue(date), date }
   })
 
-  // Filters and sort replace the entry, only pages add history
-  function replaceQuery(changes: Record<string, string | string[] | undefined>) {
-    router.replace({ query: { ...route.query, page: undefined, ...changes } })
+  /**
+   * API rule 1: changing any filter or the sort resets page to 1, so every change here drops it.
+   * Filters and sort replace the history entry, only the pager adds one
+   */
+  function replaceQuery(changes: Record<string, string | undefined>) {
+    router.replace({ query: { ...query.value, page: undefined, ...changes } })
   }
 
   // Empty lists leave the URL instead of showing up as an empty key
@@ -75,7 +78,7 @@ export function useSessionsFilters() {
   function listFilter(key: ListKey) {
     return computed<string[]>({
       get: () => {
-        const values = toList(route.query[URL_KEYS[key]])
+        const values = toList(query.value[URL_KEYS[key]])
         const valid = known[key]()
         return valid.length ? values.filter((value) => valid.includes(value)) : values
       },
@@ -85,7 +88,7 @@ export function useSessionsFilters() {
 
   const date = computed<string>({
     get: () => {
-      const value = route.query.date
+      const value = query.value.date
       return dates.some((day) => day.value === value) ? (value as string) : dates[0]!.value
     },
     // First day is the default, it stays out of the URL
@@ -97,27 +100,30 @@ export function useSessionsFilters() {
   const languages = listFilter('languages')
   const bands = listFilter('bands')
 
-  // Formats the picked venues actually have, every format when no venue is picked
-  // (or when the options failed to load, so nothing is dropped blindly)
-  const availableFormats = computed(() => {
-    if (!selectedVenues.value.length || !venuesOptions.value.length) return formatsOptions.value
-    const slugs = new Set(
+  /**
+   * API rule 2: picked venues narrow the format list to the formats they actually have
+   * (venue.formats), and selected formats they don't have are dropped.
+   */
+  function formatsOf(venueSlugs: string[]) {
+    return new Set(
       venuesOptions.value
-        .filter((venue) => selectedVenues.value.includes(venue.slug))
+        .filter((venue) => venueSlugs.includes(venue.slug))
         .flatMap((venue) => venue.formats.map((format) => format.slug)),
     )
+  }
+
+  // Every format when no venue is picked (or the options failed to load, nothing dropped blindly)
+  const availableFormats = computed(() => {
+    if (!selectedVenues.value.length || !venuesOptions.value.length) return formatsOptions.value
+    const slugs = formatsOf(selectedVenues.value)
     return formatsOptions.value.filter((format) => slugs.has(format.slug))
   })
 
-  // Picking venues drops selected formats they don't have, in the same URL update
+  // Picking venues drops the selected formats they don't have, in the same URL update
   const venues = computed<string[]>({
     get: () => selectedVenues.value,
     set: (value) => {
-      const slugs = new Set(
-        venuesOptions.value
-          .filter((venue) => value.includes(venue.slug))
-          .flatMap((venue) => venue.formats.map((format) => format.slug)),
-      )
+      const slugs = formatsOf(value)
       const formats = value.length
         ? selectedFormats.value.filter((slug) => slugs.has(slug))
         : selectedFormats.value
@@ -140,7 +146,7 @@ export function useSessionsFilters() {
   // and the request, an unknown sort counts as the default
   const sort = computed<string>({
     get: () => {
-      const value = route.query.sort
+      const value = query.value.sort
       if (typeof value !== 'string') return DEFAULT_SORT
       const valid = sortsOptions.value.map((option) => option.id)
       return !valid.length || valid.includes(value) ? value : DEFAULT_SORT
@@ -150,12 +156,13 @@ export function useSessionsFilters() {
 
   // Whole numbers from 1, anything else is page 1 (which stays out of the URL)
   const page = computed(() => {
-    const value = Number(route.query.page)
+    const value = Number(query.value.page)
     return Number.isInteger(value) && value > 1 ? value : 1
   })
 
+  // Only the pager adds history, so back goes to the previous page
   function goToPage(value: number) {
-    router.push({ query: { ...route.query, page: value === 1 ? undefined : String(value) } })
+    router.push({ query: { ...query.value, page: value === 1 ? undefined : String(value) } })
   }
 
   const activeFiltersCount = computed(
@@ -198,4 +205,4 @@ export function useSessionsFilters() {
     clearFilters,
     params,
   }
-}
+})
