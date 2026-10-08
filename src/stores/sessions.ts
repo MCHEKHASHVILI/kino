@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { SessionsGroup, SessionsMeta } from '@types'
+import type { SessionsGroup, SessionsMeta, SessionsParams } from '@types'
 import { useApiStore } from './api'
 
 // Sessions page: every showing on one date, grouped by film and paged by film
@@ -18,12 +18,11 @@ export const useSessionsStore = defineStore('sessions', () => {
   // Bumped per request, so a slow earlier page can't overwrite a newer one
   let request = 0
 
-  async function fetchSessions(page = 1) {
+  // Arrays go out as venues[]=a&venues[]=b, axios' default for array params
+  async function fetchSessions(params: SessionsParams) {
     const current = ++request
     const response = await api
-      .get<{ data: SessionsGroup[]; meta: SessionsMeta }>('sessions', 'sessions', {
-        params: { page },
-      })
+      .get<{ data: SessionsGroup[]; meta: SessionsMeta }>('sessions', 'sessions', { params })
       .catch(() => null)
     if (current !== request) return
     groups.value = response?.data ?? []

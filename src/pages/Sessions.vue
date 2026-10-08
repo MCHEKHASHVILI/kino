@@ -1,23 +1,32 @@
 <script setup lang="ts">
-import { computed, useTemplateRef, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import SelectInput from '@/components/form/SelectInput.vue'
 import SessionTicket from '@/components/ui/MovieSessions/SessionTicket.vue'
 import { useFilterOptionsStore } from '@/stores/filterOptions'
 import { useSessionsStore } from '@/stores/sessions'
 import { useHorizontalWheel } from '@/composables/useHorizontalWheel'
+import { useSessionsFilters } from '@/composables/useSessionsFilters'
 
-// Option lists are loaded once at app start, filtering itself is not wired up yet
-const { venuesOptions, formatsOptions, languagesOptions, timeBandsOptions, sortsOptions } =
+// Option lists are loaded once at app start
+const { venuesOptions, languagesOptions, timeBandsOptions, sortsOptions, isFilterOptionsSettled } =
   storeToRefs(useFilterOptionsStore())
 
-// One date at a time (API: date defaults to today), the next seven days to pick from
-const dates = Array.from({ length: 7 }, (_, index) => {
-  const date = new Date()
-  date.setDate(date.getDate() + index)
-  return date
-})
+// Date, filters, sort and page, all read from and written to the URL
+const {
+  dates,
+  date,
+  venues,
+  formats,
+  availableFormats,
+  languages,
+  bands,
+  sort,
+  goToPage,
+  activeFiltersCount,
+  clearFilters,
+  params,
+} = useSessionsFilters()
 
 // API label "Morning (before 12:00)" split into "Morning" and "before 12:00" for the two tone label
 function splitBandLabel(label: string) {
@@ -25,21 +34,18 @@ function splitBandLabel(label: string) {
   return { name, hours: rest.join(' ').replace(/^\((.*)\)$/, '$1') }
 }
 
-const route = useRoute()
-const router = useRouter()
 const sessionsStore = useSessionsStore()
 const { fetchSessions } = sessionsStore
 const { groups, meta, isLoading } = storeToRefs(sessionsStore)
 
-// Page lives in the URL (API: the whole view belongs in the address bar), 1 when missing or invalid
-const page = computed(() => Math.max(1, Number(route.query.page) || 1))
-
-function goToPage(value: number) {
-  router.push({ query: { ...route.query, page: value === 1 ? undefined : value } })
-}
-
-// Also refetches on back and forward, the query changes the same way
-watch(page, fetchSessions, { immediate: true })
+// Any change in the URL refetches, back and forward included. Compared by value,
+// so a new but equal params object (e.g. an unrelated query key) sends no request.
+// Waits for the filter options, a link is only checked against them once they are in
+watch(
+  () => (isFilterOptionsSettled.value ? JSON.stringify(params.value) : null),
+  (key) => key && fetchSessions(params.value),
+  { immediate: true },
+)
 
 // Mouse wheel scrolls the dates sideways while the cursor is over them
 useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
@@ -60,6 +66,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
         <button
           type="button"
           class="cursor-pointer text-label-s text-helper-red first-letter:uppercase"
+          @click="clearFilters"
           v-text="'clear all filters'"
         />
       </div>
@@ -67,7 +74,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
       <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'venue'" />
         <label v-for="venue in venuesOptions" :key="venue.slug" class="checkbox">
-          <input type="checkbox" class="sr-only" :value="venue.slug" />
+          <input type="checkbox" class="sr-only" :value="venue.slug" v-model="venues" />
           <span class="mark" aria-hidden="true" />
           <!-- e.g. Galleria Tbilisi · Tbilisi, the city in secondary text -->
           <span>
@@ -85,15 +92,15 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'date'" />
         <!-- Scrolls sideways with the scrollbar hidden -->
         <div ref="datesRow" class="no-scrollbar flex flex-row flex-nowrap gap-1.75 overflow-x-auto">
-          <label v-for="date in dates" :key="date.toDateString()" class="small badge-days shrink-0">
-            <input type="radio" class="sr-only" name="date" />
+          <label v-for="day in dates" :key="day.value" class="small badge-days shrink-0">
+            <input type="radio" class="sr-only" name="date" :value="day.value" v-model="date" />
             <span
               class="text-label-s text-primary capitalize"
-              v-text="date.toLocaleDateString('en-US', { weekday: 'short' })"
+              v-text="day.date.toLocaleDateString('en-US', { weekday: 'short' })"
             />
             <span
               class="text-h3 text-primary"
-              v-text="date.toLocaleDateString('en-US', { day: '2-digit' })"
+              v-text="day.date.toLocaleDateString('en-US', { day: '2-digit' })"
             />
           </label>
         </div>
@@ -104,8 +111,9 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
 
       <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'format'" />
-        <label v-for="format in formatsOptions" :key="format.slug" class="checkbox">
-          <input type="checkbox" class="sr-only" :value="format.slug" />
+        <!-- Only the formats the picked venues have -->
+        <label v-for="format in availableFormats" :key="format.slug" class="checkbox">
+          <input type="checkbox" class="sr-only" :value="format.slug" v-model="formats" />
           <span class="mark" aria-hidden="true" />
           <span v-text="format.name" />
         </label>
@@ -117,7 +125,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
       <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'language'" />
         <label v-for="language in languagesOptions" :key="language.slug" class="checkbox">
-          <input type="checkbox" class="sr-only" :value="language.slug" />
+          <input type="checkbox" class="sr-only" :value="language.slug" v-model="languages" />
           <span class="mark" aria-hidden="true" />
           <span v-text="language.name" />
         </label>
@@ -129,7 +137,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
       <fieldset class="flex flex-col gap-3">
         <legend class="mb-3 text-label-s text-secondary uppercase" v-text="'time of day'" />
         <label v-for="band in timeBandsOptions" :key="band.id" class="checkbox">
-          <input type="checkbox" class="sr-only" :value="band.id" />
+          <input type="checkbox" class="sr-only" :value="band.id" v-model="bands" />
           <span class="mark" aria-hidden="true" />
           <!-- e.g. Morning · before 12:00, the hours in secondary text like the venue's city -->
           <span>
@@ -145,8 +153,13 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
 
       <!-- divider -->
       <div class="h-px w-full bg-raised" />
-      <!-- Picked venues, formats, languages and time bands once filtering is wired up -->
-      <span class="text-center text-body-s text-secondary" v-text="'0 filters active'" />
+      <!-- Picked venues, formats, languages and time bands, the date is always set -->
+      <span
+        class="text-center text-body-s text-secondary"
+        v-text="
+          activeFiltersCount + (activeFiltersCount === 1 ? ' filter' : ' filters') + ' active'
+        "
+      />
     </aside>
 
     <!-- Filtered sessions, top aligned with the filters -->
@@ -158,7 +171,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
         />
         <div class="w-60">
           <SelectInput
-            :model-value="null"
+            v-model="sort"
             :options="sortsOptions.map((sort) => ({ value: sort.id, label: sort.label }))"
             placeholder="Sort by"
           />

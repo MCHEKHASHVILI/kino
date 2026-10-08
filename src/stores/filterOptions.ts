@@ -8,6 +8,9 @@ export const useFilterOptionsStore = defineStore('filterOptions', () => {
 
   // State
   const filterOptions = ref<FilterOptions | null>(null)
+  // First request finished and its result is stored (options or nothing on failure),
+  // isFilterOptionsLoading turns false a moment before the options are assigned
+  const isFilterOptionsSettled = ref(false)
 
   // Getters
   const isFilterOptionsLoading = computed(() => api.isLoading('filterOptions'))
@@ -32,11 +35,13 @@ export const useFilterOptionsStore = defineStore('filterOptions', () => {
       .get<{ data: FilterOptions }>('filterOptions', 'filter-options')
       .catch(() => null)
     filterOptions.value = response?.data ?? null
+    isFilterOptionsSettled.value = true
   }
 
   return {
     filterOptions,
     isFilterOptionsLoading,
+    isFilterOptionsSettled,
     venuesOptions,
     formatsOptions,
     languagesOptions,

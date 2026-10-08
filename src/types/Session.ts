@@ -45,3 +45,14 @@ export interface SessionsMeta {
   totalMovies: number
   date: string
 }
+
+// GET /sessions query, array filters take slugs and are sent as venues[]=…
+export interface SessionsParams {
+  date: string
+  page: number
+  sort?: string
+  venues?: string[]
+  formats?: string[]
+  languages?: string[]
+  bands?: string[]
+}
