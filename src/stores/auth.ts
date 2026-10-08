@@ -51,8 +51,12 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   const isLoading = computed(() => api.isLoading('login'))
-  // Wrong credentials, guest 401 is left to the caller by UnauthenticatedHandler
+  // Wrong credentials, the login request skips the global 401 handler
   const isUnauthorized = computed(() => api.errorOf('login')?.status === 401)
+  // API's own wording, e.g. "Invalid credentials.", cleared when the next attempt starts
+  const credentialsError = computed(() =>
+    isUnauthorized.value ? (api.errorOf('login')?.message ?? null) : null,
+  )
 
   // Actions
   async function login(): Promise<void> {
@@ -150,6 +154,7 @@ export const useAuthStore = defineStore('auth', () => {
     fullName,
     isLoading,
     isUnauthorized,
+    credentialsError,
     validationErrorsOf,
     inputIconStatus,
   }

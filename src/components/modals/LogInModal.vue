@@ -8,7 +8,7 @@ import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 const authStore = useAuthStore()
 const { login, validationErrorsOf } = authStore
-const { email, password, isLoading, isUnauthorized, inputIconStatus } = storeToRefs(authStore)
+const { email, password, isLoading, credentialsError, inputIconStatus } = storeToRefs(authStore)
 const modalStore = useModalStore()
 
 const { activeModal } = storeToRefs(modalStore)
@@ -42,6 +42,7 @@ const validationErrors = computed(() => validationErrorsOf('login'))
           :errors="validationErrors?.password"
           :icon="inputIconStatus('login', 'password')"
         />
+        <p v-if="credentialsError" class="text-label-s text-helper-red" v-text="credentialsError" />
         <button
           class="w-full btn-primary first-letter:uppercase"
           type="submit"

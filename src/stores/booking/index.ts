@@ -154,6 +154,20 @@ export const useBookingStore = defineStore('booking', () => {
   }
 
   /**
+   * Hold timer reached zero, as the API asks: clear the selection, reset to step 1,
+   * refetch the map and show the expiry warning.
+   * The hold already lapsed, so it is only forgotten. The warning replaces the booking modal,
+   * which refetches the map when it opens again
+   */
+  function expireHold() {
+    if (!heldSeats.value) return
+    forgetHold()
+    seatsStore.reset()
+    progress.value = 'seats'
+    useModalStore().openModal('HoldExpiredModal')
+  }
+
+  /**
    * Booking modal closed: seats go back onto the map (API asks for this on close)
    * and the flow is back on step 1, the picked seats stay so reopening the same session keeps them.
    * After paying the hold is already forgotten, so nothing is released
@@ -163,7 +177,7 @@ export const useBookingStore = defineStore('booking', () => {
     await releaseHold()
   }
 
-  // Order paid: the hold became the order, so nothing is released, only the stored id goes
+  // Hold that needs no release: paid (it became the order) or expired (it lapsed), only the stored id goes
   function forgetHold() {
     heldSeats.value = null
     localStorage.removeItem(HOLD_STORAGE_KEY)
@@ -266,6 +280,7 @@ export const useBookingStore = defineStore('booking', () => {
     canSwitchStep,
     isSelectionHeld,
     releaseHold,
+    expireHold,
     closeBooking,
     forgetHold,
     returnToSeats,

@@ -13,6 +13,7 @@ import { useBookingSeatsStore } from '@/stores/booking/seats'
 import { useBookingSessionStore } from '@/stores/booking/session'
 import { useBookingTicketTypesStore } from '@/stores/booking/ticketTypes'
 import { useBookingCheckoutStore } from '@/stores/booking/checkout'
+import { useBookingHoldTimerStore } from '@/stores/booking/holdTimer'
 
 const { activeModal } = storeToRefs(useModalStore())
 const bookingStore = useBookingStore()
@@ -20,7 +21,10 @@ const { fetchSeats, proceedToCheckout, closeBooking, goToStep } = bookingStore
 const { selectedSeats, maxSeats } = storeToRefs(useBookingSeatsStore())
 const { selectedTickets } = storeToRefs(useBookingTicketTypesStore())
 const { session, subtitle } = storeToRefs(useBookingSessionStore())
-const { seatMap, progress, subtotal, isHolding, canSwitchStep } = storeToRefs(bookingStore)
+const { seatMap, progress, subtotal, isHolding, canSwitchStep, heldSeats } =
+  storeToRefs(bookingStore)
+// Ticks while seats are held, expiry at zero is handled by the store
+const { countdown } = storeToRefs(useBookingHoldTimerStore())
 const { isFilled, isPaying } = storeToRefs(useBookingCheckoutStore())
 
 const STEPS = ['seats', 'checkout'] as const
@@ -50,12 +54,13 @@ onUnmounted(closeBooking)
     :title="session?.movie.title ?? ''"
     :subtitle="subtitle"
   >
-    <template #exit>
+    <!-- Only once a hold succeeded, the close button shows otherwise -->
+    <template v-if="heldSeats" #exit>
       <div
         class="badge-default flex flex-col items-center justify-between gap-0.5 rounded-xl bg-card px-3.5 py-2 text-center"
       >
         <span class="text-label-s text-nowrap text-secondary uppercase" v-text="'seats held'" />
-        <span class="text-button text-primary" v-text="'time'" />
+        <span class="text-button text-primary tabular-nums" v-text="countdown" />
       </div>
     </template>
     <div class="flex w-270.5 flex-col">
