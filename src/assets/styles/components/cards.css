@@ -1,0 +1,187 @@
+/**
+ * Movie card, small (home Recently viewed): poster on the left, title, details and badge beside it
+ * <a class="card-small">
+ *   <div class="poster"><img /></div>
+ *   <div class="content">
+ *     <span class="title" /> <span class="details" /> <span class="badge-hero badge-red" />
+ *   </div>
+ * </a>
+ */
+@utility card-small {
+  @apply flex w-82.5 flex-row gap-3;
+  @apply rounded-2xl bg-card p-2.5;
+  @apply transform transition duration-300 ease-linear;
+  /* No browser focus ring, keyboard focus shows the hover shadow instead (below) */
+  @apply outline-none;
+  & .poster {
+    @apply aspect-67/87 w-16.75 rounded-lg;
+
+    & img {
+      @apply aspect-67/87 w-16.75 rounded-lg object-cover;
+    }
+  }
+
+  & .content {
+    @apply flex w-52.5 flex-col justify-center gap-1;
+  }
+
+  & .title {
+    @apply text-button text-primary;
+  }
+
+  & .details {
+    @apply text-body-s text-secondary;
+  }
+
+  @variant hover {
+    @apply shadow-[0px_4px_24px_0px_var(--color-shadow)];
+  }
+  @variant active {
+    @apply shadow-[0px_4px_24px_0px_var(--color-shadow)];
+  }
+  @variant focus-visible {
+    @apply shadow-[0px_4px_24px_0px_var(--color-shadow)];
+  }
+}
+
+/**
+ * Movie card, big (home Now playing): poster on top, title, details and badge, then price and button.
+ * The card is a fixed slot in the row, the panel inside carries the look and grows over the next
+ * cards when open, so the row never reflows (no bouncing neighbours, no scroll jumps)
+ * <a class="card-big [grows-right | grows-left | grows-inline]">
+ *   <div class="panel">
+ *     <div class="poster"><img /></div>
+ *     <div class="content">
+ *       <span class="title" /> <span class="details" /> <span class="badge-hero badge-red" />
+ *     </div>
+ *     <p class="description" />
+ *     <div class="footer"><span class="price" /> <span class="btn-primary action" /></div>
+ *   </div>
+ * </a>
+ */
+@utility card-big {
+  /**
+   * Slot: keeps its place and size in the row whatever the panel does. The 16px between cards is
+   * the slots' own padding (px-2 each side, the row has no gap), so the slots touch: the mouse
+   * passes from one card straight into the next, with no dead zone where nothing is open.
+   * 276px = the 260px panel + 2 × 8px
+   */
+  @apply relative z-0 block h-115 w-69 shrink-0 px-2;
+  /* No browser focus ring, keyboard focus opens the card instead (open state below) */
+  @apply outline-none;
+  /* Stays above the neighbours until the panel has shrunk back */
+  @apply transform transition-all duration-300 ease-linear;
+
+  /* Centered on the slot, so a wider panel grows evenly to both sides */
+  & .panel {
+    @apply absolute inset-y-0 left-1/2 w-65 -translate-x-1/2;
+    @apply flex flex-col justify-between gap-3;
+    @apply rounded-[20px] bg-card p-3.5;
+    @apply transition-[width] duration-300 ease-in-out;
+  }
+
+  /* At the edges of the visible row the panel is anchored instead, so it isn't cut off:
+     at the left edge it grows rightwards, at the right edge leftwards */
+  &.grows-right .panel {
+    @apply left-2 translate-x-0;
+  }
+  &.grows-left .panel {
+    @apply right-2 left-auto translate-x-0;
+  }
+
+  /* Full panel width, fixed height: the ratio follows the panel (portrait at rest, landscape open) */
+  & .poster {
+    @apply h-75 w-full shrink-0 rounded-[14px];
+    @apply transition-[height] duration-300 ease-in-out;
+
+    & img {
+      @apply size-full rounded-[14px] object-cover;
+    }
+  }
+
+  & .content {
+    @apply flex shrink-0 flex-col items-start justify-between gap-2;
+  }
+
+  & .title {
+    @apply text-h2 text-primary;
+  }
+
+  & .details {
+    @apply text-body-m text-secondary;
+  }
+
+  /**
+   * Synopsis, collapsed (0 high, transparent) until the open state below. Always in the layout,
+   * so showing it adds no extra gap, and the only part that gives way while space is short:
+   * the footer stays put instead of being pushed down mid animation
+   */
+  & .description {
+    /* -mt-3 cancels its flex gap while collapsed, so the resting card has no empty row */
+    @apply -mt-3 line-clamp-4 max-h-0 min-h-0 text-body-s text-secondary opacity-0;
+    @apply transition-[max-height,opacity,margin] duration-300 ease-in-out;
+  }
+
+  & .footer {
+    @apply flex w-full shrink-0 flex-row items-center justify-between;
+  }
+
+  & .price {
+    @apply text-button text-primary first-letter:uppercase;
+  }
+
+  /* Smaller than a regular btn-primary, it sits in the card */
+  & .action {
+    @apply px-5.5 py-2.5 uppercase;
+  }
+
+  /**
+   * Open state: hovered (.is-open, set by CardBig, it also follows scrolling under a still mouse),
+   * pressed (touch) or focused with the keyboard.
+   * Hovering the grown panel still counts as hovering the card, the panel is inside it.
+   * Open width (w-111.75, 447px) is mirrored in CardBig.vue to pick the opening direction
+   */
+  &:is(.is-open, :active, :focus-visible) {
+    @apply z-10;
+
+    & .panel {
+      @apply w-111.75 shadow-[0px_1px_4px_0px_var(--color-shadow)];
+      @apply border border-raised;
+    }
+
+    & .poster {
+      @apply h-56;
+    }
+
+    /* Up to 4 lines (line-clamp-4 above) */
+    & .description {
+      @apply mt-0 max-h-24 opacity-100;
+    }
+  }
+
+  /**
+   * Inline growth (growth="inline" on CardBig): no fixed slot, the card itself widens left to right
+   * and pushes the rest of the row. Comes after the open state, so the panel follows the card's
+   * width instead of its own
+   */
+  &.grows-inline {
+    /* Shorter than the overlay: the row moves, so less time with cards sliding under the mouse */
+    @apply transition-[width,z-index] duration-300 ease-in-out;
+
+    & .panel {
+      @apply static h-full w-full translate-x-0;
+    }
+
+    /* Inner parts keep pace with the card */
+    & .panel,
+    & .poster,
+    & .description {
+      @apply duration-200;
+    }
+
+    /* 463px = the 447px open panel + the slot's 2 × 8px padding */
+    &:is(.is-open, :active, :focus-visible) {
+      @apply w-115.75;
+    }
+  }
+}

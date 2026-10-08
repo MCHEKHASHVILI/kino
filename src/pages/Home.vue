@@ -39,8 +39,10 @@ const { movies: recentlyViewed } = storeToRefs(useRecentlyViewedStore())
         <!-- Link to the full list (sessions page) -->
         <span class="text-label-m text-secondary capitalize" v-text="'see all'" />
       </div>
-      <HorizontalScroll class="gap-4" wheel="shift">
-        <CardBig v-for="movie in nowPlaying ?? []" :key="movie.id" :movie="movie" />
+      <!-- No gap: the cards' own padding spaces them (no dead zone between them), -mx-2 keeps
+           the first and last card in line with the section -->
+      <HorizontalScroll class="-mx-2" wheel="shift">
+        <CardBig v-for="movie in nowPlaying ?? []" :key="movie.id" :movie="movie" growth="inline" />
       </HorizontalScroll>
     </section>
     <!-- divider -->

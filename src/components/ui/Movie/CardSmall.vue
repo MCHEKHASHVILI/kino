@@ -7,22 +7,15 @@ defineProps<{ movie: RecentMovie }>()
 </script>
 
 <template>
-  <AppLink
-    :to="{ name: 'movie', params: { slug: movie.slug } }"
-    class="flex w-82.5 flex-row gap-3 rounded-2xl bg-raised p-2.5"
-  >
-    <div class="h-16.75 w-22 rounded-lg">
-      <img
-        :src="movie.posterUrl"
-        :alt="movie.title"
-        loading="lazy"
-        class="h-16.75 w-22 rounded-lg object-cover"
-      />
+  <AppLink :to="{ name: 'movie', params: { slug: movie.slug } }" class="card-small">
+    <!-- Styles in assets/styles/components/cards.css -->
+    <div class="poster">
+      <img :src="movie.posterUrl" :alt="movie.title" loading="lazy" />
     </div>
-    <div class="flex w-52.5 flex-col justify-center gap-1">
-      <span class="text-button text-primary" v-text="movie.title" />
+    <div class="content">
+      <span class="title" v-text="movie.title" />
       <span
-        class="text-body-s text-secondary"
+        class="details"
         v-text="
           [movie.genres.map((genre) => genre.name).join(', '), `${movie.runtimeMinutes} min`]
             .filter(Boolean)
