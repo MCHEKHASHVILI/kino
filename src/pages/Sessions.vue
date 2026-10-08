@@ -2,7 +2,7 @@
 import { useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import SelectInput from '@/components/form/SelectInput.vue'
-import SessionTicket from '@/components/ui/MovieSessions/SessionTicket.vue'
+import SessionCard from '@/components/ui/Sessions/SessionCard.vue'
 import { useFilterOptionsStore } from '@/stores/filterOptions'
 import { useSessionsStore } from '@/stores/sessions'
 import { useHorizontalWheel } from '@/composables/useHorizontalWheel'
@@ -53,7 +53,7 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
 
 <template>
   <!-- Row 1: title over the filters column. Row 2: filters and results, so both start at the same top -->
-  <section class="grid grid-cols-[18.75rem_minmax(0,1fr)] gap-x-8 gap-y-6 px-12.75 py-10">
+  <section class="grid grid-cols-[18.75rem_minmax(0,1fr)] gap-x-12.75 gap-y-6 px-12.75 py-10">
     <div class="col-start-1 flex flex-col gap-1.75">
       <h1 class="text-h2 text-primary capitalize" v-text="'sessions'" />
       <span class="text-body-s text-secondary" v-text="'Browse showtimes across all venues'" />
@@ -181,50 +181,44 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
       <!-- One group per movie, its sessions already sorted by start time.
            The previous page stays dimmed while the next one loads -->
       <div
-        class="flex flex-col gap-4 transition-opacity duration-300"
+        class="flex flex-col gap-8 transition-opacity duration-300"
         :class="{ 'pointer-events-none opacity-50': isLoading && groups }"
         :aria-busy="isLoading"
       >
-        <article
-          v-for="group in groups ?? []"
-          :key="group.movie.id"
-          class="flex flex-row gap-5 rounded-[26px] bg-card p-5"
-        >
-          <div class="h-33.5 w-25 shrink-0 rounded-[10px] bg-raised">
-            <img
-              :src="group.movie.posterUrl"
-              :alt="group.movie.title"
-              class="size-full rounded-[10px] object-cover"
-            />
-          </div>
-          <div class="flex min-w-0 grow flex-col gap-4">
-            <div class="flex flex-row items-center gap-2.5">
-              <span class="text-h2 text-primary uppercase" v-text="group.movie.title" />
-              <span
-                class="badge-hero badge-red px-2! py-0.75!"
-                v-text="group.movie.ageRating.code"
+        <template v-for="(group, index) in groups ?? []" :key="group.movie.id">
+          <article class="flex flex-col justify-between gap-3.5">
+            <div class="flex flex-row items-center justify-start gap-4">
+              <img
+                :src="group.movie.posterUrl"
+                :alt="group.movie.title"
+                class="h-20 w-14 shrink-0 rounded-lg object-cover"
               />
-              <span
-                class="text-body-m text-secondary"
-                v-text="group.movie.runtimeMinutes + ' min'"
-              />
-            </div>
-            <div class="flex flex-row flex-wrap gap-2.25">
-              <!-- A film plays in several venues, each ticket says where -->
-              <div
-                v-for="session in group.sessions"
-                :key="session.id"
-                class="flex flex-col gap-1.5"
-              >
+              <div class="flex flex-col justify-center gap-3">
+                <div class="flex flex-row items-center justify-start gap-3">
+                  <span class="text-h2 text-primary uppercase" v-text="group.movie.title" />
+                  <span
+                    class="badge-hero badge-red px-2! py-0.75!"
+                    v-text="group.movie.ageRating.code"
+                  />
+                </div>
                 <span
-                  class="text-body-s text-secondary"
-                  v-text="session.venue.name + ' · Hall ' + session.hall.name"
+                  class="text-body-m text-secondary"
+                  v-text="group.movie.runtimeMinutes + ' min'"
                 />
-                <SessionTicket :session="session" :movie="group.movie" />
               </div>
             </div>
-          </div>
-        </article>
+            <div class="flex flex-row flex-wrap gap-3">
+              <SessionCard
+                v-for="session in group.sessions"
+                :key="session.id"
+                :session="session"
+                :movie="group.movie"
+              />
+            </div>
+          </article>
+          <!-- divider, between groups only -->
+          <div v-if="index < (groups?.length ?? 0) - 1" class="h-px w-full bg-raised" />
+        </template>
 
         <span
           v-if="groups && !groups.length && !isLoading"
