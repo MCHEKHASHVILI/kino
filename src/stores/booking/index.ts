@@ -96,6 +96,8 @@ export const useBookingStore = defineStore('booking', () => {
       )
       if (request !== holdRequest) return
       heldSeats.value = response.data
+      // Lost seats were reviewed, the new hold went through
+      contestedSeats.value = []
     } catch (error) {
       if (request !== holdRequest) return
       // Nothing is held after a failure, previous hold is released so the stored id goes with it
@@ -112,6 +114,11 @@ export const useBookingStore = defineStore('booking', () => {
     const data = error.response?.data as { contested?: string[] } | undefined
     await fetchSeats()
     contestedSeats.value = data?.contested ?? []
+  }
+
+  // Notice closed by the user, the lost seats are already out of the selection
+  function dismissContested() {
+    contestedSeats.value = []
   }
 
   /**
@@ -271,6 +278,7 @@ export const useBookingStore = defineStore('booking', () => {
     isSeatMapLoading,
     heldSeats,
     contestedSeats,
+    dismissContested,
     isHolding,
     subtotal,
     selectSession,

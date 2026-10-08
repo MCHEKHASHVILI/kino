@@ -7,6 +7,7 @@ import SeatLegend from '@/components/ui/Booking/SeatLegend.vue'
 import SelectedSeat from '@/components/ui/Booking/SelectedSeat.vue'
 import CheckoutForm from '@/components/ui/Booking/CheckoutForm.vue'
 import OrderSummary from '@/components/ui/Booking/OrderSummary.vue'
+import ContestedSeatsNotice from '@/components/ui/Booking/ContestedSeatsNotice.vue'
 import { useModalStore } from '@/stores/modals'
 import { useBookingStore } from '@/stores/booking'
 import { useBookingSeatsStore } from '@/stores/booking/seats'
@@ -109,6 +110,8 @@ onUnmounted(closeBooking)
                 class="text-button text-primary"
                 v-text="'Your seats · Max ' + (maxSeats ?? '')"
               />
+              <!-- Seats lost on the last hold or payment (409), already dropped from the list below -->
+              <ContestedSeatsNotice />
               <span
                 v-if="!selectedSeats.length"
                 class="text-body-s text-secondary"
