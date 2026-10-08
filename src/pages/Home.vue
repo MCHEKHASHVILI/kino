@@ -2,9 +2,9 @@
 import { storeToRefs } from 'pinia'
 import HorizontalScroll from '@/components/shared/HorizontalScroll.vue'
 import FeaturedSlider from '@/components/ui/Home/FeaturedSlider.vue'
-import MovieCard from '@/components/ui/Movie/MovieCard.vue'
-import UpcomingMovieCard from '@/components/ui/Movie/UpcomingMovieCard.vue'
-import RecentMovieCard from '@/components/ui/Movie/RecentMovieCard.vue'
+import CardBig from '@/components/ui/Movie/CardBig.vue'
+import CardMedium from '@/components/ui/Movie/CardMedium.vue'
+import CardSmall from '@/components/ui/Movie/CardSmall.vue'
 import { useCatalogueStore } from '@/stores/catalogue'
 import { useRecentlyViewedStore } from '@/stores/recentlyViewed'
 
@@ -27,7 +27,7 @@ const { movies: recentlyViewed } = storeToRefs(useRecentlyViewedStore())
       <h2 class="text-h2 text-primary capitalize" v-text="'recently viewed'" />
       <!-- Rows scroll sideways, Shift+wheel so the page scroll is never caught -->
       <HorizontalScroll class="gap-4" wheel="shift">
-        <RecentMovieCard v-for="movie in recentlyViewed" :key="movie.id" :movie="movie" />
+        <CardSmall v-for="movie in recentlyViewed" :key="movie.id" :movie="movie" />
       </HorizontalScroll>
     </section>
     <!-- divider -->
@@ -40,7 +40,7 @@ const { movies: recentlyViewed } = storeToRefs(useRecentlyViewedStore())
         <span class="text-label-m text-secondary capitalize" v-text="'see all'" />
       </div>
       <HorizontalScroll class="gap-4" wheel="shift">
-        <MovieCard v-for="movie in nowPlaying ?? []" :key="movie.id" :movie="movie" />
+        <CardBig v-for="movie in nowPlaying ?? []" :key="movie.id" :movie="movie" />
       </HorizontalScroll>
     </section>
     <!-- divider -->
@@ -49,7 +49,7 @@ const { movies: recentlyViewed } = storeToRefs(useRecentlyViewedStore())
     <section class="flex flex-col gap-5">
       <h2 class="text-h2 text-primary capitalize" v-text="'coming soon'" />
       <HorizontalScroll class="gap-4" wheel="shift">
-        <UpcomingMovieCard v-for="movie in comingSoon ?? []" :key="movie.id" :movie="movie" />
+        <CardMedium v-for="movie in comingSoon ?? []" :key="movie.id" :movie="movie" />
       </HorizontalScroll>
     </section>
   </div>
