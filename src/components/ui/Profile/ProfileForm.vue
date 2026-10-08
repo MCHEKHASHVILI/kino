@@ -42,7 +42,9 @@ const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()]
       :icon="inputIconStatus('profile', 'fullName')"
     />
     <!-- Set at registration, the API ignores changes -->
-    <TextInput type="email" label="email" :model-value="email" disabled />
+    <TextInput type="email" label="email" :model-value="email" :disabled="true">
+      <template #note>Set at registration and cannot be changed</template>
+    </TextInput>
     <TextInput
       type="tel"
       label="mobile number"

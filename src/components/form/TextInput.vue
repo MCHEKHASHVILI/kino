@@ -53,6 +53,8 @@ const currentIcon = computed<string | undefined>(() => props.icon)
         <IconLoader :name="currentIcon || ''" class="text-[16px]" />
       </span>
     </div>
+    <!-- Helper text under the input, e.g. why a field is read only -->
+    <p v-if="$slots.note" class="text-label-s text-secondary"><slot name="note" /></p>
     <div v-if="errors && errors.length" class="flex flex-col">
       <p v-for="error in errors" class="text-label-s text-helper-red" v-text="error" />
     </div>

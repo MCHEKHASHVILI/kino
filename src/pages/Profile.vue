@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import ProfileForm from '@/components/ui/Profile/ProfileForm.vue'
@@ -31,9 +31,8 @@ const tab = computed<ProfileTab>({
 fill()
 fetchVenues()
 
-// Loaded with the page for the tab's count badge, refreshed whenever the tab is opened
+// Once per visit, also for the tab's count badge. Refunds update the list from their response
 fetchTickets()
-watch(tab, (value) => value === 'tickets' && fetchTickets())
 </script>
 
 <template>
