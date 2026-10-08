@@ -12,6 +12,9 @@ const router = useRouter()
 // Tickets are fetched by the profile page, which also needs them for the tab's count badge
 const { orders, ordersByGroup, isLoading } = storeToRefs(useTicketsStore())
 
+// Nothing to show yet: skeleton cards and no tab counts. A refetch (refused refund) keeps both
+const isFirstLoad = computed(() => isLoading.value && !orders.value.length)
+
 // Upcoming unless ?group= names another one, kept in the query like the profile tab
 const ticketGroup = computed<TicketGroup>({
   get: () =>
@@ -33,11 +36,13 @@ const ticketGroup = computed<TicketGroup>({
           v-model="ticketGroup"
           name="ticketGroup"
         />
-        <span class="uppercase" v-text="value + ' ' + ordersByGroup[value].length" />
+        <span
+          class="uppercase"
+          v-text="isFirstLoad ? value : value + ' ' + ordersByGroup[value].length"
+        />
       </label>
     </div>
-    <!-- Skeleton only on first load, a refetch (refused refund) keeps the cards -->
-    <TicketCardSkeleton v-if="isLoading && !orders.length" />
+    <TicketCardSkeleton v-if="isFirstLoad" />
     <div v-else class="flex flex-col gap-4">
       <span
         v-if="!ordersByGroup[ticketGroup].length && !isLoading"
