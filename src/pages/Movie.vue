@@ -148,7 +148,7 @@ watch(() => props.slug, fetchMovie, { immediate: true })
                       </div>
                       <!-- Divider with notches -->
                       <div
-                        class="relative my-2 w-px bg-[linear-gradient(to_bottom,currentColor_50%,transparent_50%)] bg-size-[1px_8px] bg-center bg-repeat-y text-primary"
+                        class="relative my-2 w-px bg-[linear-gradient(to_bottom,currentColor_3px,transparent_3px)] bg-size-[1px_7px] bg-center bg-repeat-y text-primary"
                       >
                         <span
                           class="absolute -top-3.25 left-[-5.6px] h-3 w-3 rounded-full bg-card"

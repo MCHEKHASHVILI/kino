@@ -1,0 +1,20 @@
+@utility profile-tabs {
+  @apply relative pb-4;
+  @apply flex flex-row items-start justify-start;
+  @apply w-fit;
+  @apply text-label-m text-secondary;
+  @apply cursor-pointer;
+  @apply transform transition-all ease-out duration-initial;
+
+  @variant hover {
+    /* @apply bg-raised; */
+    @apply transform transition-all ease-out duration-initial;
+  }
+
+  @variant has-[:checked] {
+    @apply text-primary;
+    /* Apply ::after styles when checked */
+    @apply after:absolute after:bottom-0 after:left-0 after:w-full after:content-[''];
+    @apply after:rounded-t-xs after:border-t-2 after:border-helper-red;
+  }
+}

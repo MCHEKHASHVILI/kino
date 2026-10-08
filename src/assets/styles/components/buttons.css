@@ -38,6 +38,12 @@
     @apply bg-secondary;
     @apply backdrop-blur-[44px];
   }
+  /* After hover, so a disabled button doesn't light up */
+  @variant disabled {
+    @apply bg-disabled;
+    @apply text-secondary;
+    @apply cursor-not-allowed;
+  }
 }
 
 @utility btn-notify {
