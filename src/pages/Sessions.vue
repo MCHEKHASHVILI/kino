@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue'
+import { computed, useTemplateRef, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import SelectInput from '@/components/form/SelectInput.vue'
+import SessionTicket from '@/components/ui/MovieSessions/SessionTicket.vue'
 import { useFilterOptionsStore } from '@/stores/filterOptions'
+import { useSessionsStore } from '@/stores/sessions'
 import { useHorizontalWheel } from '@/composables/useHorizontalWheel'
 
 // Option lists are loaded once at app start, filtering itself is not wired up yet
@@ -21,6 +24,22 @@ function splitBandLabel(label: string) {
   const [name = '', ...rest] = label.split(' ')
   return { name, hours: rest.join(' ').replace(/^\((.*)\)$/, '$1') }
 }
+
+const route = useRoute()
+const router = useRouter()
+const sessionsStore = useSessionsStore()
+const { fetchSessions } = sessionsStore
+const { groups, meta, isLoading } = storeToRefs(sessionsStore)
+
+// Page lives in the URL (API: the whole view belongs in the address bar), 1 when missing or invalid
+const page = computed(() => Math.max(1, Number(route.query.page) || 1))
+
+function goToPage(value: number) {
+  router.push({ query: { ...route.query, page: value === 1 ? undefined : value } })
+}
+
+// Also refetches on back and forward, the query changes the same way
+watch(page, fetchSessions, { immediate: true })
 
 // Mouse wheel scrolls the dates sideways while the cursor is over them
 useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
@@ -133,8 +152,10 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
     <!-- Filtered sessions, top aligned with the filters -->
     <div class="col-start-2 row-start-2 flex flex-col gap-6">
       <div class="flex flex-row items-center justify-between gap-6">
-        <!-- meta.totalSessions -->
-        <span class="text-label-m text-primary" v-text="'Showing 12 sessions'" />
+        <span
+          class="text-label-m text-primary"
+          v-text="meta ? `Showing ${meta.totalSessions} sessions` : ''"
+        />
         <div class="w-60">
           <SelectInput
             :model-value="null"
@@ -144,33 +165,85 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
         </div>
       </div>
 
-      <!-- One group per movie, its sessions already sorted by start time -->
-      <div class="flex flex-col gap-4">
-        <article class="flex flex-row gap-5 rounded-[26px] bg-card p-5">
+      <!-- One group per movie, its sessions already sorted by start time.
+           The previous page stays dimmed while the next one loads -->
+      <div
+        class="flex flex-col gap-4 transition-opacity duration-300"
+        :class="{ 'pointer-events-none opacity-50': isLoading && groups }"
+        :aria-busy="isLoading"
+      >
+        <article
+          v-for="group in groups ?? []"
+          :key="group.movie.id"
+          class="flex flex-row gap-5 rounded-[26px] bg-card p-5"
+        >
           <div class="h-33.5 w-25 shrink-0 rounded-[10px] bg-raised">
-            <!-- movie.posterUrl -->
+            <img
+              :src="group.movie.posterUrl"
+              :alt="group.movie.title"
+              class="size-full rounded-[10px] object-cover"
+            />
           </div>
           <div class="flex min-w-0 grow flex-col gap-4">
             <div class="flex flex-row items-center gap-2.5">
-              <span class="text-h2 text-primary uppercase" v-text="'movie title'" />
-              <span class="badge-hero badge-red px-2! py-0.75!" v-text="'PG'" />
-              <span class="text-body-m text-secondary" v-text="'120 min'" />
+              <span class="text-h2 text-primary uppercase" v-text="group.movie.title" />
+              <span
+                class="badge-hero badge-red px-2! py-0.75!"
+                v-text="group.movie.ageRating.code"
+              />
+              <span
+                class="text-body-m text-secondary"
+                v-text="group.movie.runtimeMinutes + ' min'"
+              />
             </div>
-            <!-- Session tickets, same badge-ticket as the movie page. Sold out stays visible, disabled -->
             <div class="flex flex-row flex-wrap gap-2.25">
-              <div class="flex h-19.5 w-52 rounded-2xl bg-page" />
-              <div class="flex h-19.5 w-52 rounded-2xl bg-page" />
-              <div class="flex h-19.5 w-52 rounded-2xl bg-page" />
+              <!-- A film plays in several venues, each ticket says where -->
+              <div
+                v-for="session in group.sessions"
+                :key="session.id"
+                class="flex flex-col gap-1.5"
+              >
+                <span
+                  class="text-body-s text-secondary"
+                  v-text="session.venue.name + ' · Hall ' + session.hall.name"
+                />
+                <SessionTicket :session="session" :movie="group.movie" />
+              </div>
             </div>
           </div>
         </article>
+
+        <span
+          v-if="groups && !groups.length && !isLoading"
+          class="text-body-m text-secondary"
+          v-text="'No sessions on this date.'"
+        />
       </div>
 
-      <!-- Pages count movies, not sessions (meta.lastPage) -->
-      <nav class="flex flex-row items-center justify-center gap-2" aria-label="Pagination">
-        <button type="button" class="btn-transparent uppercase" v-text="'previous'" />
-        <span class="text-label-m text-secondary" v-text="'1 / 1'" />
-        <button type="button" class="btn-transparent uppercase" v-text="'next'" />
+      <!-- Pages count movies, not sessions -->
+      <nav
+        v-if="meta && meta.lastPage > 1"
+        class="flex flex-row items-center justify-center gap-2"
+        aria-label="Pagination"
+      >
+        <button
+          type="button"
+          class="btn-transparent uppercase"
+          :disabled="meta.currentPage <= 1 || isLoading"
+          @click="goToPage(meta.currentPage - 1)"
+          v-text="'previous'"
+        />
+        <span
+          class="text-label-m text-secondary"
+          v-text="meta.currentPage + ' / ' + meta.lastPage"
+        />
+        <button
+          type="button"
+          class="btn-transparent uppercase"
+          :disabled="meta.currentPage >= meta.lastPage || isLoading"
+          @click="goToPage(meta.currentPage + 1)"
+          v-text="'next'"
+        />
       </nav>
     </div>
   </section>

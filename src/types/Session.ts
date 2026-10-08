@@ -29,3 +29,19 @@ export interface MovieSession {
   venue: Venue
   sessions: MovieSessionItem[]
 }
+
+// GET /sessions: one film with its showtimes on the requested date, sorted by start time
+export interface SessionsGroup {
+  movie: Movie
+  sessions: MovieSessionItem[]
+}
+
+// Pages count films, not sessions, totalSessions is for the "Showing X sessions" counter
+export interface SessionsMeta {
+  currentPage: number
+  lastPage: number
+  perPage: number
+  totalSessions: number
+  totalMovies: number
+  date: string
+}

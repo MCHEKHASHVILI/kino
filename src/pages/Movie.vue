@@ -2,16 +2,14 @@
 import { watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMovieStore } from '@/stores/movie'
-import { useBookingStore } from '@/stores/booking'
-import AppLink from '@/components/shared/AppLink.vue'
 import IconLoader from '@/components/shared/IconLoader.vue'
 import SessionDatesSkeleton from '@/components/ui/MovieSessions/SessionDatesSkeleton.vue'
 import VenueSessionsSkeleton from '@/components/ui/MovieSessions/VenueSessionsSkeleton.vue'
+import SessionTicket from '@/components/ui/MovieSessions/SessionTicket.vue'
 
 const props = defineProps<{ slug: string }>()
 const movieStore = useMovieStore()
 const { fetchMovie, groupVenueSessionsByHalls } = movieStore
-const { selectSession } = useBookingStore()
 const { movie, sessionDate, movieSessions, isMovieLoading, isSessionsLoading } =
   storeToRefs(movieStore)
 
@@ -130,56 +128,7 @@ watch(() => props.slug, fetchMovie, { immediate: true })
                 <span class="text-primary" v-text="'Hall ' + hall.hall.name" />
                 <div class="flex flex-row justify-between gap-2.25">
                   <div v-for="session in hall.sessions">
-                    <AppLink
-                      :to="{ name: 'action.modal', params: { name: 'BookingModal' } }"
-                      @click="movie && selectSession(session, movie)"
-                      class="badge-ticket"
-                    >
-                      <!-- Left: time + tags -->
-                      <div class="flex w-31 flex-col items-center justify-center gap-2 py-3.75">
-                        <span class="text-h2 text-primary" v-text="session.time" />
-                        <div class="flex items-center gap-1.5">
-                          <span
-                            class="text-body-s text-secondary uppercase"
-                            v-text="session.language.code"
-                          />
-                          <span class="badge-default uppercase" v-text="session.format.name" />
-                        </div>
-                      </div>
-                      <!-- Divider with notches -->
-                      <div
-                        class="relative my-2 w-px bg-[linear-gradient(to_bottom,currentColor_3px,transparent_3px)] bg-size-[1px_7px] bg-center bg-repeat-y text-primary"
-                      >
-                        <span
-                          class="absolute -top-3.25 left-[-5.6px] h-3 w-3 rounded-full bg-card"
-                        ></span>
-                        <span
-                          class="absolute -bottom-3.25 left-[-5.6px] h-3 w-3 rounded-full bg-card"
-                        ></span>
-                      </div>
-
-                      <!-- Right: price + seats -->
-                      <div
-                        v-if="!session.isSoldOut"
-                        class="flex w-20.75 flex-col items-center justify-center gap-2 px-2.5 py-3.75"
-                      >
-                        <span class="text-h3 text-helper-red" v-text="'₾ ' + session.price" />
-                        <div class="flex flex-row items-baseline justify-center gap-1">
-                          <IconLoader name="Ticket" class="text-body-s text-secondary" />
-                          <span
-                            class="text-body-s text-secondary"
-                            v-text="session.seatsLeft + ' left'"
-                          />
-                        </div>
-                      </div>
-                      <div
-                        v-else
-                        class="flex w-20.75 flex-col items-center justify-center gap-2 px-2.5 py-3.75"
-                      >
-                        <IconLoader name="Error" class="text-h3 text-helper-red" />
-                        <span class="badge-red text-nowrap" v-text="'Sold out'" />
-                      </div>
-                    </AppLink>
+                    <SessionTicket v-if="movie" :session="session" :movie="movie" />
                   </div>
                 </div>
               </div>
