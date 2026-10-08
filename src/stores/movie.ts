@@ -20,7 +20,9 @@ export const useMovieStore = defineStore('movie', () => {
   )
 
   // Actions
-  async function fetchMovie(movieSlug: string) {
+  // Opens on preferredDate (e.g. the session picked on the sessions page) when the movie plays
+  // that day, otherwise on its first available date
+  async function fetchMovie(movieSlug: string, preferredDate?: string | null) {
     slug.value = movieSlug
     movie.value = null
     // Previous movie's sessions must not stay on screen (dimmed) for the new one
@@ -33,9 +35,13 @@ export const useMovieStore = defineStore('movie', () => {
     if (!response || movieSlug !== slug.value) return
 
     movie.value = response.data
-    sessionDate.value = movie.value.availableDates.length
-      ? (movie.value.availableDates[0] as string)
-      : null
+    selectDate(preferredDate)
+  }
+
+  // A day the movie plays on, the first available one when the date is missing or unknown
+  function selectDate(date?: string | null) {
+    const availableDates = movie.value?.availableDates ?? []
+    sessionDate.value = date && availableDates.includes(date) ? date : (availableDates[0] ?? null)
   }
 
   // Old sessions are kept (dimmed) while the new date loads, instead of falling back to the skeleton
@@ -75,6 +81,7 @@ export const useMovieStore = defineStore('movie', () => {
     isMovieLoading,
     isSessionsLoading,
     fetchMovie,
+    selectDate,
     fetchMovieSessions,
     groupVenueSessionsByHalls,
   }

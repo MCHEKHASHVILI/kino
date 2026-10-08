@@ -41,7 +41,12 @@ const disabledReason = computed(() => {
 })
 const isDisabled = computed(() => disabledReason.value !== null)
 
-const movieRoute = computed(() => ({ name: 'movie', params: { slug: props.movie.slug } }))
+// Opens on the session's day, not the movie's first date
+const movieRoute = computed(() => ({
+  name: 'movie',
+  params: { slug: props.movie.slug },
+  query: { date: props.session.date },
+}))
 
 /**
  * Picks the session, opens the movie page, then the booking modal on top of it.

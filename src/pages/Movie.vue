@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useMovieStore } from '@/stores/movie'
 import IconLoader from '@/components/shared/IconLoader.vue'
@@ -9,12 +10,38 @@ import SessionTicket from '@/components/ui/MovieSessions/SessionTicket.vue'
 
 const props = defineProps<{ slug: string }>()
 const movieStore = useMovieStore()
-const { fetchMovie, groupVenueSessionsByHalls } = movieStore
+const { fetchMovie, selectDate, groupVenueSessionsByHalls } = movieStore
 const { movie, sessionDate, movieSessions, isMovieLoading, isSessionsLoading } =
   storeToRefs(movieStore)
 
+const route = useRoute()
+const router = useRouter()
+
+// The selected day lives in ?date=, so a reload, a shared link or back / forward shows the same day
+const queryDate = () => (typeof route.query.date === 'string' ? route.query.date : null)
+
 // Component is reused when navigating between movies, so refetch on slug change
-watch(() => props.slug, fetchMovie, { immediate: true })
+watch(
+  () => props.slug,
+  (slug) => fetchMovie(slug, queryDate()),
+  { immediate: true },
+)
+
+// ?date= changed on the same movie (back / forward, or a pick below)
+watch(
+  () => route.query.date,
+  () => movie.value && selectDate(queryDate()),
+)
+
+/**
+ * Picking a day only writes the URL, the watcher above selects it.
+ * The day chosen on load is not written back: a same path navigation closes open modals,
+ * which would close the booking modal opened from a session card or restored after a reload
+ */
+const selectedDate = computed({
+  get: () => sessionDate.value,
+  set: (date) => router.replace({ query: { ...route.query, date: date ?? undefined } }),
+})
 </script>
 
 <template>
@@ -96,7 +123,7 @@ watch(() => props.slug, fetchMovie, { immediate: true })
                 <input
                   type="radio"
                   class="sr-only"
-                  v-model="sessionDate"
+                  v-model="selectedDate"
                   :value="date"
                   name="sessionDate"
                 />
