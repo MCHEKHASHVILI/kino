@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Movie, MovieWithSynopsis } from '@types'
 import { useApiStore } from './api'
+import { useAuthStore } from './auth'
 
 // Movies in the home page's Now playing row
 const NOW_PLAYING_HOME_LIMIT = 10
@@ -22,6 +23,7 @@ export const useCatalogueStore = defineStore('catalogue', () => {
   const isFeaturedLoading = computed(() => api.isLoading('featured'))
   const isNowPlayingLoading = computed(() => api.isLoading('nowPlaying'))
   const isComingSoonLoading = computed(() => api.isLoading('comingSoon'))
+  const isNotifying = computed(() => (movie: Movie) => api.isLoading(`notify.${movie.slug}`))
 
   // Actions
   // A failed request leaves it empty, so a later visit tries again
@@ -52,6 +54,35 @@ export const useCatalogueStore = defineStore('catalogue', () => {
     comingSoon.value = response?.data ?? []
   }
 
+  /**
+   * POST /movies/{movie}/notify, subscribes the signed in user to a coming soon title.
+   * Subscribing twice is a no-op that still returns 201 (API), so a double click is harmless.
+   * A guest gets 401, the global handler opens the login modal.
+   * There is no unsubscribe, the movie is only marked as notified wherever it is listed
+   */
+  async function notify(movie: Movie): Promise<boolean> {
+    if (movie.isNotified || isNotifying.value(movie)) return false
+    const response = await api
+      .post(`notify.${movie.slug}`, `movies/${movie.slug}/notify`)
+      .catch(() => null)
+    if (!response) return false
+    for (const list of [featured.value, nowPlaying.value, comingSoon.value]) {
+      const listed = list?.find((item) => item.id === movie.id)
+      if (listed) listed.isNotified = true
+    }
+    return true
+  }
+
+  // isNotified is per user: a list already loaded is reloaded after a login or logout
+  watch(
+    () => useAuthStore().token,
+    () => {
+      if (!comingSoon.value) return
+      comingSoon.value = null
+      fetchComingSoon()
+    },
+  )
+
   return {
     featured,
     nowPlaying,
@@ -59,8 +90,10 @@ export const useCatalogueStore = defineStore('catalogue', () => {
     isFeaturedLoading,
     isNowPlayingLoading,
     isComingSoonLoading,
+    isNotifying,
     fetchFeatured,
     fetchNowPlaying,
     fetchComingSoon,
+    notify,
   }
 })

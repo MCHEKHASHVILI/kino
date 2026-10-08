@@ -3,7 +3,7 @@ import ApplicationLogo from '@/components/shared/ApplicationLogo.vue'
 </script>
 <template>
   <!-- wrapper: centered, at most the 3xl container wide on large screens -->
-  <footer class="wrapper bottom-0 flex flex-col gap-5 bg-page pt-6.75 pb-x-footer-figma">
+  <footer class="wrapper bottom-0 flex flex-col gap-5 bg-page pt-6.75 pb-8.5">
     <div class="h-px w-full bg-raised"></div>
     <div class="flex flex-row items-center justify-between">
       <ApplicationLogo class="text-button" />

@@ -37,7 +37,7 @@ const { movies: recentlyViewed } = storeToRefs(useRecentlyViewedStore())
       <div class="flex flex-row items-center justify-between">
         <h2 class="text-h2 text-primary capitalize" v-text="'now playing'" />
         <!-- Link to the full list (sessions page) -->
-        <span class="text-label-m text-secondary capitalize" v-text="'see all'" />
+        <span class="text-label-m text-helper-red capitalize" v-text="'see all'" />
       </div>
       <!-- No gap: the cards' own padding spaces them (no dead zone between them), -mx-2 keeps
            the first and last card in line with the section -->
@@ -49,7 +49,11 @@ const { movies: recentlyViewed } = storeToRefs(useRecentlyViewedStore())
     <div class="h-px w-full bg-raised" />
     <!-- 4. Coming soon, GET /movies/coming-soon -->
     <section class="flex flex-col gap-5">
-      <h2 class="text-h2 text-primary capitalize" v-text="'coming soon'" />
+      <div class="flex flex-row items-center justify-between">
+        <h2 class="text-h2 text-primary capitalize" v-text="'coming soon'" />
+        <!-- Link to the full list (sessions page) -->
+        <span class="text-label-m text-helper-red capitalize" v-text="'see all'" />
+      </div>
       <HorizontalScroll class="gap-4" wheel="shift">
         <CardMedium v-for="movie in comingSoon ?? []" :key="movie.id" :movie="movie" />
       </HorizontalScroll>
