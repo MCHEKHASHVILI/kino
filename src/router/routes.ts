@@ -10,6 +10,8 @@ const routes = [
     path: '/',
     name: 'home',
     component: Home,
+    // Header sits over the featured slider
+    meta: { overlayHeader: true },
   },
   {
     path: '/sessions',
