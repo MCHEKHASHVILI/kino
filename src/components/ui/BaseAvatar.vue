@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import StatusDot from '@/assets/svg/Dot.svg?component'
-import { useAuthStore } from '@/stores/auth'
-const { initials } = useAuthStore()
+import IconLoader from '@/components/shared/IconLoader.vue'
 const props = withDefaults(
   defineProps<{
     status: 'complete' | 'incomplete'
@@ -20,7 +19,8 @@ const statusColor = {
 
 <template>
   <div class="relative flex aspect-square h-10 items-center justify-center rounded-lg bg-card">
-    <div v-if="!avatar" class="text-label-s text-primary uppercase" v-text="initials" />
+    <!-- No avatar uploaded -->
+    <IconLoader v-if="!avatar" name="User" class="text-[16px] text-primary" />
     <div v-else class="circle-container">
       <img :src="avatar" alt="preview" />
     </div>

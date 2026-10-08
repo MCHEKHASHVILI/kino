@@ -9,7 +9,7 @@ import IconLoader from '@/components/shared/IconLoader.vue'
 import AppLink from '../shared/AppLink.vue'
 
 const authStore = useAuthStore()
-const { user, userName, isProfileComplete, avatar, fullName } = storeToRefs(authStore)
+const { user, userName, firstName, isProfileComplete, avatar, fullName } = storeToRefs(authStore)
 const { logout } = authStore
 
 const route = useRoute()
@@ -62,8 +62,8 @@ watch(() => route.fullPath, closeInstantly)
         :avatar="avatar ? avatar : null"
         alt="User profile avatar"
       />
-      <!-- User Name -->
-      <span class="text-label-m text-primary" v-text="userName" />
+      <!-- First name once the full name is set, username before that -->
+      <span class="text-label-m text-primary" v-text="firstName || userName" />
 
       <!-- Rotating Arrow Icon -->
       <IconLoader

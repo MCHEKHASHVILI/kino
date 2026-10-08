@@ -27,11 +27,8 @@ export const useAuthStore = defineStore('auth', () => {
     return names.map((name) => name.charAt(0)).join('')
   })
 
-  const firstName = computed(() => {
-    if (!user.value || !user.value.fullName) return ''
-    const names = user.value.fullName.split(' ')
-    return names[0]
-  })
+  // First word of the full name, stray spaces ignored
+  const firstName = computed(() => user.value?.fullName?.trim().split(/\s+/)[0] ?? '')
 
   const userName = computed(() => {
     if (!user.value || !user.value.username) return ''
