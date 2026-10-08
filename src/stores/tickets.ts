@@ -43,8 +43,10 @@ export const useTicketsStore = defineStore('tickets', () => {
   const refundErrorOf = computed(() => (order: Order) => api.messageOf(refundKey(order)))
 
   // Actions
-  // Refetched on every visit, a new order or a refund may have happened since
+  // Refetched on every visit, a new order or a refund may have happened since.
+  // Skipped while one is in flight, app start and the profile page may both ask at once
   async function fetchTickets() {
+    if (isLoading.value) return
     const response = await api.get<{ data: Order[] }>('tickets', 'tickets').catch(() => null)
     orders.value = response?.data ?? []
   }
