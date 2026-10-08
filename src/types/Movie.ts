@@ -25,3 +25,9 @@ export interface MovieDetails extends Movie {
   cast: string
   availableDates: string[]
 }
+
+// Featured and now playing lists carry the synopsis too
+export interface MovieWithSynopsis extends Movie {
+  isNotified: boolean
+  synopsis: string
+}

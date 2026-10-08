@@ -40,7 +40,7 @@ fetchTickets()
 </script>
 
 <template>
-  <section class="flex flex-col gap-8 px-12.75 py-10">
+  <section class="flex flex-col gap-8 py-10">
     <h1 class="text-h2 text-primary capitalize" v-text="'my profile'" />
 
     <div class="flex w-full flex-row gap-8 border-b border-b-card">

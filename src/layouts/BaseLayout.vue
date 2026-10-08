@@ -8,7 +8,7 @@ const route = useRoute()
 <template>
   <div class="relative">
     <Header :class="route.meta.overlayHeader ? 'absolute inset-x-0 top-0 z-50' : 'relative z-50'" />
-    <main>
+    <main class="wrapper">
       <slot />
     </main>
   </div>

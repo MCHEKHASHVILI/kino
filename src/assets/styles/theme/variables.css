@@ -1,8 +1,30 @@
 @theme {
   /* Typography */
   --font-sans: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  --root-font-size: 16;
   /* Screen Breakpoints */
+  --screen-3xl: 1728;
   --breakpoint-3xl: 1728px;
+
+  /** Figma Proportion Hell */
+  /* Figma frame width, a plain number (a --breakpoint-* name would become a Tailwind breakpoint) */
+  --screen-figma: 1728;
+  --root-font-figma-size: 14;
+  --padding-x-header-figma: 60;
+  --wrapper-3xl-figma: calc(var(--screen-figma) - (var(--padding-x-header-figma) * 2));
+  --padding-x-footer-figma: 34;
+  --wrapper-3xl-footer-figma: calc((var(--screen-figma) - (var(--padding-x-footer-figma) * 2)));
+
+  /** Proportion */
+  --wrapper-margin-3xl: calc(
+    (var(--padding-x-header-figma) / var(--screen-figma)) * var(--screen-3xl)
+  );
   /* Container Sizes */
-  --container-3xl: 97.875rem;
+  --wrapper-3xl: calc(
+    (var(--screen-3xl) - (var(--wrapper-margin-3xl) * 2)) / var(--root-font-size)
+  );
+  --wrapper-3xl-footer: calc(
+    ((var(--screen-3xl) / var(--screen-figma)) * var(--wrapper-3xl-footer-figma)) /
+      var(--root-font-size)
+  );
 }

@@ -87,7 +87,7 @@ watch(isLoading, (loading) => {
 
 <template>
   <!-- Row 1: title over the filters column. Row 2: filters and results, so both start at the same top -->
-  <section class="grid grid-cols-[18.75rem_minmax(0,1fr)] gap-x-12.75 gap-y-6 px-12.75">
+  <section class="grid grid-cols-[18.75rem_minmax(0,1fr)] gap-x-12.75 gap-y-6">
     <div class="col-start-1 flex flex-col gap-1.75">
       <h1 class="text-h2 text-primary capitalize" v-text="'sessions'" />
       <span class="text-body-s text-secondary" v-text="'Browse showtimes across all venues'" />

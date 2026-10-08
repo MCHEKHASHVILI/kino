@@ -3,7 +3,7 @@ import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useMovieStore } from '@/stores/movie'
-import IconLoader from '@/components/shared/IconLoader.vue'
+import MovieBadges from '@/components/ui/Movie/MovieBadges.vue'
 import SessionDatesSkeleton from '@/components/ui/MovieSessions/SessionDatesSkeleton.vue'
 import VenueSessionsSkeleton from '@/components/ui/MovieSessions/VenueSessionsSkeleton.vue'
 import SessionTicket from '@/components/ui/MovieSessions/SessionTicket.vue'
@@ -64,7 +64,7 @@ const selectedDate = computed({
       </section>
 
       <!-- Content overlaps the bottom of the backdrop -->
-      <div class="relative z-10 ml-15">
+      <div class="relative z-10">
         <template v-if="movie">
           <div class="flex flex-row items-end justify-start gap-8.5">
             <div class="h-93.5 w-72.25 rounded-[14px]">
@@ -90,26 +90,14 @@ const selectedDate = computed({
               <div class="flex flex-col justify-between gap-5">
                 <span class="text-display text-primary uppercase" v-text="movie.title" />
                 <span class="text-body-m text-primary" v-text="movie.synopsis" />
-                <div class="flex flex-row items-center justify-start gap-1">
-                  <span class="badge-hero badge-red" v-text="movie.ageRating.code" />
-                  <div class="badge-hero badge-default">
-                    <IconLoader name="Timer" class="text-14px" />
-                    <span v-text="movie.runtimeMinutes" />
-                    <span class="capitalize" v-text="'min'" />
-                  </div>
-                  <span
-                    v-for="format in movie.formats"
-                    class="badge-hero badge-default uppercase"
-                    v-text="format.name"
-                  />
-                </div>
+                <MovieBadges :movie="movie" />
               </div>
             </div>
           </div>
         </template>
       </div>
     </div>
-    <div class="flex flex-row gap-2.5 px-12.75">
+    <div class="flex flex-row gap-2.5">
       <div class="flex w-full flex-col gap-6.75">
         <div class="flex flex-col gap-3.5">
           <div class="flex flex-col justify-between gap-1.75">
