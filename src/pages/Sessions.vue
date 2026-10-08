@@ -3,6 +3,7 @@ import { useTemplateRef, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import SelectInput from '@/components/form/SelectInput.vue'
 import SessionCard from '@/components/ui/Sessions/SessionCard.vue'
+import SessionsListSkeleton from '@/components/ui/Sessions/SessionsListSkeleton.vue'
 import { useFilterOptionsStore } from '@/stores/filterOptions'
 import { useSessionsStore } from '@/stores/sessions'
 import { useHorizontalWheel } from '@/composables/useHorizontalWheel'
@@ -178,9 +179,12 @@ useHorizontalWheel(useTemplateRef<HTMLElement>('datesRow'))
         />
       </div>
 
+      <!-- Skeleton only on first load (nothing to show yet), later loads dim the current list -->
+      <SessionsListSkeleton v-if="!groups" />
       <!-- One group per movie, its sessions already sorted by start time.
            The previous page stays dimmed while the next one loads -->
       <div
+        v-else
         class="flex flex-col gap-8 transition-opacity duration-300"
         :class="{ 'pointer-events-none opacity-50': isLoading && groups }"
         :aria-busy="isLoading"
