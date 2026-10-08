@@ -10,7 +10,8 @@ const ticketsStore = useTicketsStore()
 const { askRefund } = ticketsStore
 const { isRefunding, refundErrorOf } = storeToRefs(ticketsStore)
 
-// API stops refunds this long before the session starts
+// API stops refunds this long before the session starts.
+// Temporary copy of the backend rule until the order carries refundableUntil, see NOTES.md
 const REFUND_CUTOFF_MS = 2 * 60 * 60 * 1000
 
 // Hall clock time, read as UTC and formatted in UTC so the viewer's timezone never shifts it
@@ -127,7 +128,7 @@ const refundNote = computed(() => {
       <button
         type="button"
         class="btn-transparent uppercase"
-        :disabled="order.status === 'refunded' || !order.isRefundable || isRefunding(order)"
+        :disabled="!order.isRefundable || isRefunding(order)"
         @click="askRefund(order)"
         v-text="'refund'"
       />
